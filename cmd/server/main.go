@@ -47,6 +47,7 @@ func main() {
 		handler = httpapi.NewRouterWithDependencies(httpapi.Dependencies{
 			Store:     postgresStore,
 			ScanStore: postgresStore,
+			Catalog:   postgresStore,
 			Scanner:   ingest.New(postgresStore, metadata.Probe),
 		})
 	} else {
