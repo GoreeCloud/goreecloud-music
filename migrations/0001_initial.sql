@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     display_name TEXT NOT NULL,
@@ -67,5 +65,3 @@ CREATE INDEX albums_library_id_idx ON albums(library_id);
 CREATE INDEX tracks_library_id_idx ON tracks(library_id);
 CREATE INDEX tracks_album_id_idx ON tracks(album_id);
 CREATE INDEX track_files_track_id_idx ON track_files(track_id);
-
-COMMIT;
