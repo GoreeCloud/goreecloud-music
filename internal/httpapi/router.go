@@ -24,6 +24,7 @@ type aboutResponse struct {
 type Dependencies struct {
 	Store     store.MusicStore
 	ScanStore LibraryScanStore
+	Catalog   LibraryCatalogStore
 	Scanner   LibraryScanner
 }
 
@@ -36,6 +37,8 @@ func NewRouterWithDependencies(deps Dependencies) http.Handler {
 	mux.HandleFunc("GET /healthz", health)
 	mux.HandleFunc("GET /api/v1/about", about)
 	mux.Handle("GET /api/v1/me/libraries", librariesHandler{store: deps.Store})
+	mux.Handle("GET /api/v1/libraries/{libraryID}/albums", catalogHandler{store: deps.Store, catalog: deps.Catalog, kind: "albums"})
+	mux.Handle("GET /api/v1/libraries/{libraryID}/tracks", catalogHandler{store: deps.Store, catalog: deps.Catalog, kind: "tracks"})
 	mux.Handle("POST /api/v1/libraries/{libraryID}/scan", libraryScanHandler{
 		store:   deps.Store,
 		scan:    deps.ScanStore,
@@ -64,6 +67,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 			"authorization-boundaries",
 			"scanner-reconciliation",
 			"metadata-ingestion",
+			"library-catalog-browse",
 			"native-api",
 			"open-subsonic-planned",
 		},
