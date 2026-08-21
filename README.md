@@ -11,13 +11,15 @@ Development is in the native foundation stage. Draft PR #1 now contains:
 - Go HTTP API service with bounded `/healthz` and `/api/v1/about` endpoints.
 - React + TypeScript web-client foundation.
 - Initial Glaze UI music application shell and persistent player surface.
-- PostgreSQL development environment.
-- First multi-user music domain types for users, libraries, memberships, artists, albums, tracks, and track files.
-- Initial PostgreSQL schema migration matching those domain boundaries.
-- Domain and HTTP API tests.
-- Docker and CI foundations.
+- PostgreSQL development environment and initial schema migration.
+- Multi-user domain types for users, libraries, memberships, artists, albums, tracks, and track files.
+- Persistence interfaces plus an initial PostgreSQL store implementation.
+- Request-principal and library authorization foundations with a development-only identity middleware that is disabled by default.
+- Recursive audio-file discovery for common music formats.
+- Domain, authorization, scanner, and HTTP API tests.
+- Docker and CI foundations, including a corrected container build that includes internal Go packages.
 
-Production deployment is not approved. Authentication, persistent database access, scanning, metadata extraction, streaming, transcoding, OpenSubsonic compatibility, and native clients remain under development.
+Production deployment is not approved. Production authentication, live database-driver wiring, runtime migration execution, metadata extraction, streaming, transcoding, OpenSubsonic compatibility, and native clients remain under development.
 
 ## Architecture direction
 
@@ -38,7 +40,7 @@ The web client is maintained under `web/`.
 
 ```bash
 cd web
-npm ci
+npm install --no-audit --no-fund
 npm run dev
 ```
 
