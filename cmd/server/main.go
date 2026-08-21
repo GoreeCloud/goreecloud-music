@@ -48,6 +48,7 @@ func main() {
 			Store:     postgresStore,
 			ScanStore: postgresStore,
 			Catalog:   postgresStore,
+			Artwork:   postgresStore,
 			Scanner:   ingest.New(postgresStore, metadata.Probe),
 		})
 	} else {
