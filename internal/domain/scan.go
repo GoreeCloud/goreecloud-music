@@ -6,14 +6,14 @@ import (
 )
 
 type ScannedTrackFile struct {
-	LibraryID  string
-	Path       string
-	SizeBytes  int64
-	Title      string
-	Artist     string
-	Album      string
+	LibraryID   string
+	Path        string
+	SizeBytes   int64
+	Title       string
+	Artist      string
+	Album       string
 	AlbumArtist string
-	Genre      string
+	Genre       string
 	ReleaseYear int
 	TrackNumber int
 	DiscNumber  int
