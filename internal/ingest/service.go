@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GoreeCloud/goreecloud-music/internal/artwork"
 	"github.com/GoreeCloud/goreecloud-music/internal/domain"
 	"github.com/GoreeCloud/goreecloud-music/internal/metadata"
 	"github.com/GoreeCloud/goreecloud-music/internal/scanner"
@@ -19,26 +20,34 @@ type Repository interface {
 	DeleteStaleTrackFiles(ctx context.Context, libraryID string, before time.Time) (int64, error)
 }
 
+type ArtworkRepository interface {
+	UpsertAlbumArtworkForTrackPath(ctx context.Context, libraryID, trackPath string, source artwork.Source) error
+}
+
 type ProbeFunc func(context.Context, string) (metadata.TrackMetadata, error)
+type ArtworkDetector func(context.Context, string) (artwork.Source, bool, error)
 
 type Summary struct {
 	Discovered int   `json:"discovered"`
 	Indexed    int   `json:"indexed"`
+	Artwork    int   `json:"artwork"`
 	Removed    int64 `json:"removed"`
 	Failed     int   `json:"failed"`
 }
 
 type Service struct {
-	repository Repository
-	probe      ProbeFunc
-	now        func() time.Time
+	repository    Repository
+	probe         ProbeFunc
+	detectArtwork ArtworkDetector
+	now           func() time.Time
 }
 
 func New(repository Repository, probe ProbeFunc) *Service {
 	return &Service{
-		repository: repository,
-		probe:      probe,
-		now:        time.Now,
+		repository:    repository,
+		probe:         probe,
+		detectArtwork: artwork.DetectSidecar,
+		now:           time.Now,
 	}
 }
 
@@ -58,6 +67,7 @@ func (s *Service) ScanLibrary(ctx context.Context, library domain.Library) (Summ
 	scanStarted := s.now().UTC()
 	summary := Summary{Discovered: len(files)}
 	var failures []error
+	artworkRepository, persistArtwork := s.repository.(ArtworkRepository)
 
 	for _, file := range files {
 		trackMetadata, err := s.probe(ctx, file.Path)
@@ -74,6 +84,23 @@ func (s *Service) ScanLibrary(ctx context.Context, library domain.Library) (Summ
 			continue
 		}
 		summary.Indexed++
+
+		if persistArtwork && s.detectArtwork != nil {
+			source, found, err := s.detectArtwork(ctx, file.Path)
+			if err != nil {
+				summary.Failed++
+				failures = append(failures, fmt.Errorf("discover artwork %s: %w", file.Path, err))
+				continue
+			}
+			if found {
+				if err := artworkRepository.UpsertAlbumArtworkForTrackPath(ctx, library.ID, file.Path, source); err != nil {
+					summary.Failed++
+					failures = append(failures, fmt.Errorf("persist artwork %s: %w", file.Path, err))
+					continue
+				}
+				summary.Artwork++
+			}
+		}
 	}
 
 	if len(failures) > 0 {
