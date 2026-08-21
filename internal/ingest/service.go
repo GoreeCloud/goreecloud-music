@@ -46,7 +46,7 @@ func New(repository Repository, probe ProbeFunc) *Service {
 	return &Service{
 		repository:    repository,
 		probe:         probe,
-		detectArtwork: artwork.DetectSidecar,
+		detectArtwork: artwork.Detect,
 		now:           time.Now,
 	}
 }

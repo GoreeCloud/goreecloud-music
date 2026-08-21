@@ -67,6 +67,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 			"authorization-boundaries",
 			"scanner-reconciliation",
 			"metadata-ingestion",
+			"artwork-ingestion",
 			"library-catalog-browse",
 			"native-api",
 			"open-subsonic-planned",
