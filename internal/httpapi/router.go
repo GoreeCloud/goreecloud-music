@@ -13,9 +13,9 @@ type healthResponse struct {
 }
 
 type aboutResponse struct {
-	Name        string   `json:"name"`
-	APIVersion  string   `json:"apiVersion"`
-	Status      string   `json:"status"`
+	Name         string   `json:"name"`
+	APIVersion   string   `json:"apiVersion"`
+	Status       string   `json:"status"`
 	Capabilities []string `json:"capabilities"`
 }
 
