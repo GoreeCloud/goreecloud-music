@@ -18,13 +18,23 @@ User identity, library membership, private listening history, playlists, recomme
 
 No reusable credential belongs in source control. External metadata, lyric, scrobbling, recommendation, or discovery providers must remain optional and explicitly configured.
 
-## Domain foundation
+## Domain and persistence foundation
 
-The initial domain model now establishes separate concepts for users, libraries, library memberships, artists, albums, tracks, and track files. Library membership is the first authorization boundary: a user can be granted read access independently from management access.
+The domain model establishes separate concepts for users, libraries, library memberships, artists, albums, tracks, and track files. Library membership is the first authorization boundary: a user can be granted read access independently from management access.
 
 Source audio paths belong to track-file records rather than replacing music metadata. This keeps the application model capable of supporting multiple encodings or file variants for a logical track later without changing the track identity itself.
 
-The first PostgreSQL migration mirrors these initial domain boundaries and uses foreign-key cleanup rules that preserve clear ownership relationships. It is development schema only; no production database migration has been authorized.
+The first PostgreSQL migration mirrors these initial domain boundaries. A `MusicStore` interface now separates application behavior from persistence, with an initial PostgreSQL implementation for user lookup, readable-library listing, and library-membership lookup. Database-driver wiring and production migration execution remain intentionally deferred until the connection lifecycle is added and validated.
+
+## Identity and authorization foundation
+
+The API now has an explicit request-principal model and library authorization helpers. Read and management rights are evaluated separately. Administrators can manage service resources, while ordinary users require matching membership records for library access.
+
+A development-only identity middleware is available for local integration work. It is disabled by default and must never be treated as production authentication. GoreeCloud Identity integration or another approved production authentication mechanism remains required before deployment.
+
+## Scanner foundation
+
+The initial scanner performs bounded recursive discovery from a configured library root and recognizes common audio extensions including FLAC, ALAC, WAV, AIFF, AAC, M4A, MP3, Ogg Vorbis, and Opus. It currently discovers candidate files and file sizes only. Metadata parsing, fingerprinting, change reconciliation, symbolic-link policy, and database ingestion remain separate follow-on work.
 
 ## Planned API boundaries
 
@@ -36,7 +46,7 @@ The first PostgreSQL migration mirrors these initial domain boundaries and uses 
 ## Development order
 
 1. Repository and architecture foundation. **Implemented in Draft PR #1.**
-2. Identity, authorization, PostgreSQL schema, libraries, scanner, and metadata extraction. **Domain/schema foundation in progress.**
+2. Identity, authorization, PostgreSQL schema, libraries, scanner, and metadata extraction. **Identity, authorization, persistence interface, and scanner discovery foundations are now in progress.**
 3. Browse/search, range streaming, queue, playlists, favorites, and ratings.
 4. Original/lossless playback and adaptive transcoding.
 5. Lyrics, advanced metadata, smart playlists, and credits.
@@ -47,4 +57,4 @@ The first PostgreSQL migration mirrors these initial domain boundaries and uses 
 
 ## Current non-goals
 
-The current branch does not yet implement password authentication, GoreeCloud Identity integration, persistent database access, filesystem scanning, metadata extraction, streaming, transcoding, or production deployment. These boundaries remain intentionally closed until their implementation and validation work is added.
+The current branch does not yet implement production authentication, GoreeCloud Identity integration, live PostgreSQL driver wiring, automatic runtime migration execution, metadata extraction, streaming, transcoding, OpenSubsonic endpoints, or production deployment. These boundaries remain intentionally closed until their implementation and validation work is added.
