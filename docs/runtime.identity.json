@@ -1,0 +1,21 @@
+{
+  "database": {
+    "engine": "PostgreSQL",
+    "driver": "pgx/v5 database/sql",
+    "environmentVariable": "DATABASE_URL",
+    "requiredForPersistence": true
+  },
+  "migrations": {
+    "embedded": true,
+    "path": "migrations/*.sql",
+    "startupAutomaticByDefault": false,
+    "enableVariable": "GOREECLOUD_MUSIC_AUTO_MIGRATE",
+    "trackingTable": "schema_migrations"
+  },
+  "developmentIdentity": {
+    "enabledByDefault": false,
+    "enableVariable": "GOREECLOUD_MUSIC_DEV_IDENTITY",
+    "productionAuthentication": false
+  },
+  "productionApproved": false
+}
