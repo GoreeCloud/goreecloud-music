@@ -1,0 +1,25 @@
+# Go
+/bin/
+*.test
+*.out
+
+# Node
+web/node_modules/
+web/dist/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Runtime data
+/data/
+/tmp/
+*.db
+*.sqlite
+*.sqlite3

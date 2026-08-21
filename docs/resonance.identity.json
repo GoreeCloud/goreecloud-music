@@ -1,0 +1,59 @@
+{
+  "schema": "goreecloud.music.resonance.identity",
+  "version": 1,
+  "status": "active",
+  "product": "GoreeCloud Music",
+  "capabilityIdentity": "GoreeCloud Resonance",
+  "shortName": "Resonance",
+  "preferredPresentation": "GoreeCloud Music — Powered by Resonance.",
+  "relationship": [
+    "GoreeCloud Suite",
+    "GoreeCloud Music",
+    "GoreeCloud Resonance"
+  ],
+  "runtimeAuthority": "GoreeCloud Music",
+  "standaloneRuntime": false,
+  "families": [
+    "Resonance Library",
+    "Resonance Audio",
+    "Resonance Player",
+    "Resonance Discover",
+    "Resonance Mixes",
+    "Resonance Radio",
+    "Resonance Playlists",
+    "Resonance Lyrics",
+    "Resonance Credits",
+    "Resonance Offline",
+    "Resonance Search",
+    "Resonance Together",
+    "Resonance Profile",
+    "Resonance Intelligence",
+    "Resonance Connect",
+    "Resonance Import",
+    "Resonance Preserve"
+  ],
+  "platformIdentities": {
+    "designLanguage": "Glaze UI",
+    "security": "Wardveil Security by GoreeCloud",
+    "privacy": "GoreeCloud Privacy Shield",
+    "resilience": "Everkeep",
+    "suite": "GoreeCloud Suite"
+  },
+  "privacy": {
+    "localIntelligenceByDefault": true,
+    "externalProvidersOptional": true
+  },
+  "visualIdentity": {
+    "canonicalMarkApproved": false,
+    "direction": [
+      "resonance",
+      "waveform interaction",
+      "harmonic relationship",
+      "propagation",
+      "connection",
+      "layered musical energy"
+    ]
+  },
+  "authoritativeRecord": "Standard — Resonance Identity",
+  "sourceControlMirror": "docs/resonance.md"
+}
