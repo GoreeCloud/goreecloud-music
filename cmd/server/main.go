@@ -1,35 +1,20 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"time"
-)
 
-type healthResponse struct {
-	Status  string `json:"status"`
-	Service string `json:"service"`
-	Time    string `json:"time"`
-}
+	"github.com/GoreeCloud/goreecloud-music/internal/httpapi"
+)
 
 func main() {
 	addr := env("GOREECLOUD_MUSIC_ADDR", ":8080")
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(healthResponse{
-			Status:  "ok",
-			Service: "goreecloud-music",
-			Time:    time.Now().UTC().Format(time.RFC3339),
-		})
-	})
-
 	server := &http.Server{
 		Addr:              addr,
-		Handler:           mux,
+		Handler:           httpapi.NewRouter(),
 		ReadHeaderTimeout: 5 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
