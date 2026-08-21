@@ -76,3 +76,55 @@ func (s *PostgresStore) LibraryMembership(ctx context.Context, libraryID, userID
 	}
 	return membership, nil
 }
+
+func (s *PostgresStore) AlbumsForLibrary(ctx context.Context, libraryID string) ([]domain.Album, error) {
+	const query = `
+		SELECT id::text, library_id::text, title, COALESCE(album_artist_id::text, ''), release_year, created_at
+		FROM albums
+		WHERE library_id::text = $1
+		ORDER BY title, release_year DESC, id`
+	rows, err := s.db.QueryContext(ctx, query, libraryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var albums []domain.Album
+	for rows.Next() {
+		var album domain.Album
+		if err := rows.Scan(&album.ID, &album.LibraryID, &album.Title, &album.AlbumArtistID, &album.ReleaseYear, &album.CreatedAt); err != nil {
+			return nil, err
+		}
+		albums = append(albums, album)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return albums, nil
+}
+
+func (s *PostgresStore) TracksForLibrary(ctx context.Context, libraryID string) ([]domain.Track, error) {
+	const query = `
+		SELECT id::text, library_id::text, COALESCE(album_id::text, ''), title, track_number, disc_number, duration_ms, created_at
+		FROM tracks
+		WHERE library_id::text = $1
+		ORDER BY title, disc_number, track_number, id`
+	rows, err := s.db.QueryContext(ctx, query, libraryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tracks []domain.Track
+	for rows.Next() {
+		var track domain.Track
+		if err := rows.Scan(&track.ID, &track.LibraryID, &track.AlbumID, &track.Title, &track.TrackNumber, &track.DiscNumber, &track.DurationMS, &track.CreatedAt); err != nil {
+			return nil, err
+		}
+		tracks = append(tracks, track)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return tracks, nil
+}
