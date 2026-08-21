@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/GoreeCloud/goreecloud-music/internal/store"
 )
 
 type healthResponse struct {
@@ -19,10 +21,19 @@ type aboutResponse struct {
 	Capabilities []string `json:"capabilities"`
 }
 
+type Dependencies struct {
+	Store store.MusicStore
+}
+
 func NewRouter() http.Handler {
+	return NewRouterWithDependencies(Dependencies{})
+}
+
+func NewRouterWithDependencies(deps Dependencies) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", health)
 	mux.HandleFunc("GET /api/v1/about", about)
+	mux.Handle("GET /api/v1/me/libraries", librariesHandler{store: deps.Store})
 	return mux
 }
 
@@ -42,6 +53,9 @@ func about(w http.ResponseWriter, r *http.Request) {
 		Capabilities: []string{
 			"multi-user-domain-foundation",
 			"multiple-libraries",
+			"persistence-boundary",
+			"authorization-boundaries",
+			"scanner-foundation",
 			"native-api",
 			"open-subsonic-planned",
 		},
