@@ -2,8 +2,11 @@ package artwork
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -25,6 +28,13 @@ var sidecarNames = []string{
 	"cover.jpg", "cover.jpeg", "cover.png", "cover.webp",
 	"folder.jpg", "folder.jpeg", "folder.png", "folder.webp",
 	"front.jpg", "front.jpeg", "front.png", "front.webp",
+}
+
+func Detect(ctx context.Context, audioPath string) (Source, bool, error) {
+	if source, found, err := DetectSidecar(ctx, audioPath); err != nil || found {
+		return source, found, err
+	}
+	return DetectEmbedded(ctx, audioPath)
 }
 
 func DetectSidecar(_ context.Context, audioPath string) (Source, bool, error) {
@@ -57,6 +67,44 @@ func DetectSidecar(_ context.Context, audioPath string) (Source, bool, error) {
 	return Source{}, false, nil
 }
 
+func DetectEmbedded(ctx context.Context, audioPath string) (Source, bool, error) {
+	audioPath = strings.TrimSpace(audioPath)
+	if audioPath == "" {
+		return Source{}, false, errors.New("audio path is required")
+	}
+	cmd := exec.CommandContext(ctx, "ffprobe", "-v", "error", "-select_streams", "v", "-show_entries", "stream=codec_name:stream_disposition=attached_pic", "-of", "json", audioPath)
+	output, err := cmd.Output()
+	if err != nil {
+		return Source{}, false, fmt.Errorf("ffprobe artwork: %w", err)
+	}
+	mimeType, found, err := ParseEmbeddedProbe(output)
+	if err != nil || !found {
+		return Source{}, found, err
+	}
+	return Source{Type: SourceEmbedded, Path: audioPath, MIMEType: mimeType}, true, nil
+}
+
+func ParseEmbeddedProbe(data []byte) (string, bool, error) {
+	var result struct {
+		Streams []struct {
+			CodecName   string `json:"codec_name"`
+			Disposition struct {
+				AttachedPic int `json:"attached_pic"`
+			} `json:"disposition"`
+		} `json:"streams"`
+	}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return "", false, fmt.Errorf("decode artwork probe: %w", err)
+	}
+	for _, stream := range result.Streams {
+		if stream.Disposition.AttachedPic != 1 {
+			continue
+		}
+		return mimeForCodec(stream.CodecName), true, nil
+	}
+	return "", false, nil
+}
+
 func mimeForPath(path string) string {
 	switch strings.ToLower(filepath.Ext(path)) {
 	case ".jpg", ".jpeg":
@@ -64,6 +112,19 @@ func mimeForPath(path string) string {
 	case ".png":
 		return "image/png"
 	case ".webp":
+		return "image/webp"
+	default:
+		return "application/octet-stream"
+	}
+}
+
+func mimeForCodec(codec string) string {
+	switch strings.ToLower(strings.TrimSpace(codec)) {
+	case "mjpeg", "jpeg":
+		return "image/jpeg"
+	case "png":
+		return "image/png"
+	case "webp":
 		return "image/webp"
 	default:
 		return "application/octet-stream"
