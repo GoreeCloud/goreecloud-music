@@ -53,3 +53,28 @@ func TestDetectSidecarMissing(t *testing.T) {
 		t.Fatal("unexpected artwork")
 	}
 }
+
+func TestParseEmbeddedProbe(t *testing.T) {
+	data := []byte(`{"streams":[{"codec_name":"mjpeg","disposition":{"attached_pic":1}}]}`)
+	mimeType, found, err := ParseEmbeddedProbe(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !found {
+		t.Fatal("expected embedded artwork")
+	}
+	if mimeType != "image/jpeg" {
+		t.Fatalf("mime = %q", mimeType)
+	}
+}
+
+func TestParseEmbeddedProbeWithoutAttachedPicture(t *testing.T) {
+	data := []byte(`{"streams":[{"codec_name":"png","disposition":{"attached_pic":0}}]}`)
+	_, found, err := ParseEmbeddedProbe(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if found {
+		t.Fatal("unexpected embedded artwork")
+	}
+}
