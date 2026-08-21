@@ -3,6 +3,7 @@ package scanner
 import (
 	"errors"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -34,7 +35,7 @@ func Discover(root string) ([]File, error) {
 		return nil, ErrInvalidRoot
 	}
 
-	info, err := fs.Stat(osDirFS{}, cleanRoot)
+	info, err := os.Stat(cleanRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -67,10 +68,4 @@ func Discover(root string) ([]File, error) {
 
 	sort.Slice(files, func(i, j int) bool { return files[i].Path < files[j].Path })
 	return files, nil
-}
-
-type osDirFS struct{}
-
-func (osDirFS) Open(name string) (fs.File, error) {
-	return fs.OpenFile(nil, name)
 }
