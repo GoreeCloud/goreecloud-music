@@ -22,17 +22,23 @@ type artworkTestStore struct {
 }
 
 func (s artworkTestStore) UserByID(context.Context, string) (domain.User, error) { return s.user, nil }
-func (s artworkTestStore) LibrariesForUser(context.Context, string) ([]domain.Library, error) { return nil, nil }
+func (s artworkTestStore) LibrariesForUser(context.Context, string) ([]domain.Library, error) {
+	return nil, nil
+}
 func (s artworkTestStore) LibraryMembership(context.Context, string, string) (domain.LibraryMembership, error) {
 	return s.membership, nil
 }
-func (s artworkTestStore) LibraryByID(context.Context, string) (domain.Library, error) { return s.library, nil }
-func (s artworkTestStore) AlbumArtwork(context.Context, string, string) (artwork.Source, error) { return s.source, nil }
+func (s artworkTestStore) LibraryByID(context.Context, string) (domain.Library, error) {
+	return s.library, nil
+}
+func (s artworkTestStore) AlbumArtwork(context.Context, string, string) (artwork.Source, error) {
+	return s.source, nil
+}
 
 func TestAlbumArtworkRequiresReadableMembership(t *testing.T) {
 	backend := artworkTestStore{
-		user: domain.User{ID: "user-1", DisplayName: "User", Role: domain.RoleUser},
-		library: domain.Library{ID: "lib-1", Name: "Library", RootPath: "/music", Visibility: domain.LibraryPrivate},
+		user:       domain.User{ID: "user-1", DisplayName: "User", Role: domain.RoleUser},
+		library:    domain.Library{ID: "lib-1", Name: "Library", RootPath: "/music", Visibility: domain.LibraryPrivate},
 		membership: domain.LibraryMembership{LibraryID: "lib-1", UserID: "user-1", CanRead: false},
 	}
 	h := albumArtworkHandler{store: backend, artwork: backend}
@@ -54,10 +60,10 @@ func TestAlbumArtworkServesSidecar(t *testing.T) {
 		t.Fatal(err)
 	}
 	backend := artworkTestStore{
-		user: domain.User{ID: "user-1", DisplayName: "User", Role: domain.RoleUser},
-		library: domain.Library{ID: "lib-1", Name: "Library", RootPath: "/music", Visibility: domain.LibraryPrivate},
+		user:       domain.User{ID: "user-1", DisplayName: "User", Role: domain.RoleUser},
+		library:    domain.Library{ID: "lib-1", Name: "Library", RootPath: "/music", Visibility: domain.LibraryPrivate},
 		membership: domain.LibraryMembership{LibraryID: "lib-1", UserID: "user-1", CanRead: true},
-		source: artwork.Source{Type: artwork.SourceSidecar, Path: path, MIMEType: "image/jpeg"},
+		source:     artwork.Source{Type: artwork.SourceSidecar, Path: path, MIMEType: "image/jpeg"},
 	}
 	h := albumArtworkHandler{store: backend, artwork: backend}
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/libraries/lib-1/albums/album-1/artwork", nil)
