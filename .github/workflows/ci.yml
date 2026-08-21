@@ -17,6 +17,10 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Resolve modules
+        run: |
+          go mod tidy
+          cat go.sum
       - name: Format check
         run: test -z "$(gofmt -l .)"
       - name: Test
