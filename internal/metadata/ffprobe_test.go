@@ -27,7 +27,8 @@ func TestParseFFProbe(t *testing.T) {
 			"codec_type": "audio",
 			"codec_name": "flac",
 			"sample_rate": "96000",
-			"channels": 2
+			"channels": 2,
+			"bits_per_raw_sample": "24"
 		}]
 	}`)
 
@@ -38,7 +39,7 @@ func TestParseFFProbe(t *testing.T) {
 	if metadata.Title != "Signal" || metadata.Artist != "Example Artist" {
 		t.Fatalf("unexpected tags: %+v", metadata)
 	}
-	if metadata.Codec != "flac" || metadata.SampleRate != 96000 || metadata.Channels != 2 {
+	if metadata.Codec != "flac" || metadata.SampleRate != 96000 || metadata.Channels != 2 || metadata.BitDepth != 24 {
 		t.Fatalf("unexpected audio properties: %+v", metadata)
 	}
 	if metadata.Bitrate != 921600 || metadata.DurationMS != 245125 {

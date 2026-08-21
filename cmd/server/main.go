@@ -13,6 +13,8 @@ import (
 	"github.com/GoreeCloud/goreecloud-music/internal/auth"
 	musicdb "github.com/GoreeCloud/goreecloud-music/internal/database"
 	"github.com/GoreeCloud/goreecloud-music/internal/httpapi"
+	"github.com/GoreeCloud/goreecloud-music/internal/ingest"
+	"github.com/GoreeCloud/goreecloud-music/internal/metadata"
 	"github.com/GoreeCloud/goreecloud-music/internal/migrate"
 	"github.com/GoreeCloud/goreecloud-music/internal/store"
 )
@@ -41,8 +43,11 @@ func main() {
 			log.Print("database migrations applied")
 		}
 
+		postgresStore := store.NewPostgres(db)
 		handler = httpapi.NewRouterWithDependencies(httpapi.Dependencies{
-			Store: store.NewPostgres(db),
+			Store:     postgresStore,
+			ScanStore: postgresStore,
+			Scanner:   ingest.New(postgresStore, metadata.Probe),
 		})
 	} else {
 		log.Print("DATABASE_URL is not set; persistence-backed endpoints are unavailable")
