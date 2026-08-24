@@ -26,6 +26,7 @@ type Dependencies struct {
 	ScanStore LibraryScanStore
 	Catalog   LibraryCatalogStore
 	Artwork   AlbumArtworkStore
+	Stream    TrackStreamStore
 	Scanner   LibraryScanner
 }
 
@@ -41,6 +42,7 @@ func NewRouterWithDependencies(deps Dependencies) http.Handler {
 	mux.Handle("GET /api/v1/libraries/{libraryID}/albums", catalogHandler{store: deps.Store, catalog: deps.Catalog, kind: "albums"})
 	mux.Handle("GET /api/v1/libraries/{libraryID}/albums/{albumID}/artwork", albumArtworkHandler{store: deps.Store, artwork: deps.Artwork})
 	mux.Handle("GET /api/v1/libraries/{libraryID}/tracks", catalogHandler{store: deps.Store, catalog: deps.Catalog, kind: "tracks"})
+	mux.Handle("GET /api/v1/libraries/{libraryID}/tracks/{trackID}/stream", trackStreamHandler{store: deps.Store, stream: deps.Stream})
 	mux.Handle("POST /api/v1/libraries/{libraryID}/scan", libraryScanHandler{
 		store:   deps.Store,
 		scan:    deps.ScanStore,
@@ -72,6 +74,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 			"artwork-ingestion",
 			"artwork-delivery",
 			"library-catalog-browse",
+			"byte-range-streaming",
 			"native-api",
 			"open-subsonic-planned",
 		},
