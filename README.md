@@ -59,3 +59,7 @@ npm run dev
 ## Status
 
 This repository is active development software and is not yet approved for production use.
+
+## License
+
+GoreeCloud Music is licensed under the GNU Affero General Public License, version 3 only (`AGPL-3.0-only`). See `LICENSE`.
