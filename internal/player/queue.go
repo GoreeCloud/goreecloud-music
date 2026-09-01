@@ -1,6 +1,9 @@
 package player
 
-import "errors"
+import (
+	"errors"
+	"math/rand"
+)
 
 var ErrInvalidQueueIndex = errors.New("invalid queue index")
 
@@ -40,6 +43,28 @@ func (q *Queue) SetCurrent(index int) error {
 	}
 	q.Current = index
 	return nil
+}
+
+// Shuffle randomizes only the unplayed portion of the queue. The current track
+// and already-played prefix stay in place so enabling shuffle does not rewrite
+// listening history or interrupt the active track.
+func (q *Queue) Shuffle(source rand.Source) {
+	if source == nil || len(q.TrackIDs) < 2 {
+		return
+	}
+
+	start := 0
+	if q.Current >= 0 && q.Current < len(q.TrackIDs) {
+		start = q.Current + 1
+	}
+	if len(q.TrackIDs)-start < 2 {
+		return
+	}
+
+	rng := rand.New(source)
+	rng.Shuffle(len(q.TrackIDs)-start, func(i, j int) {
+		q.TrackIDs[start+i], q.TrackIDs[start+j] = q.TrackIDs[start+j], q.TrackIDs[start+i]
+	})
 }
 
 func (q *Queue) Next() bool {
