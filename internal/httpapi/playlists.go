@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -26,8 +27,8 @@ type PlaylistService interface {
 }
 
 type playlistAPIHandler struct {
-	store    store.MusicStore
-	service  PlaylistService
+	store     store.MusicStore
+	service   PlaylistService
 	operation string
 }
 
@@ -112,8 +113,8 @@ func (h playlistAPIHandler) list(w http.ResponseWriter, r *http.Request, userID 
 	response := playlistListResponse{Playlists: make([]playlistSummaryResponse, 0, len(entries))}
 	for _, entry := range entries {
 		response.Playlists = append(response.Playlists, playlistSummaryResponse{
-			ID: entry.ID,
-			Name: entry.Name,
+			ID:         entry.ID,
+			Name:       entry.Name,
 			TrackCount: entry.TrackCount,
 		})
 	}
@@ -211,10 +212,10 @@ func (h playlistAPIHandler) remove(w http.ResponseWriter, r *http.Request, userI
 		return
 	}
 	writeJSON(w, http.StatusOK, struct {
-		Playlist playlistResponse `json:"playlist"`
-		RemovedTrackID string `json:"removedTrackId"`
+		Playlist       playlistResponse `json:"playlist"`
+		RemovedTrackID string           `json:"removedTrackId"`
 	}{
-		Playlist: playlistHTTPResponse(record, playlist),
+		Playlist:       playlistHTTPResponse(record, playlist),
 		RemovedTrackID: removed,
 	})
 }
@@ -275,8 +276,8 @@ func writePlaylist(w http.ResponseWriter, status int, record playlists.Record, p
 
 func playlistHTTPResponse(record playlists.Record, playlist playlists.Playlist) playlistResponse {
 	return playlistResponse{
-		ID: playlist.ID(),
-		Name: playlist.Name(),
+		ID:       playlist.ID(),
+		Name:     playlist.Name(),
 		TrackIDs: playlist.TrackIDs(),
 		Revision: strconv.FormatUint(uint64(record.Revision()), 10),
 	}
