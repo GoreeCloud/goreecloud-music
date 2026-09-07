@@ -1,6 +1,10 @@
 package player
 
-import "testing"
+import (
+	"math/rand"
+	"reflect"
+	"testing"
+)
 
 func TestQueueNavigation(t *testing.T) {
 	q := NewQueue([]string{"one", "two", "three"})
@@ -43,5 +47,44 @@ func TestQueueRepeatOneStaysCurrent(t *testing.T) {
 	}
 	if id, _ := q.CurrentTrackID(); id != "one" {
 		t.Fatalf("expected current track to remain one, got %q", id)
+	}
+}
+
+func TestQueueShufflePreservesCurrentAndPlayedPrefix(t *testing.T) {
+	q := NewQueue([]string{"one", "two", "three", "four", "five", "six"})
+	if err := q.SetCurrent(1); err != nil {
+		t.Fatal(err)
+	}
+
+	q.Shuffle(rand.NewSource(7))
+
+	if q.Current != 1 {
+		t.Fatalf("current index = %d, want 1", q.Current)
+	}
+	if !reflect.DeepEqual(q.TrackIDs[:2], []string{"one", "two"}) {
+		t.Fatalf("played prefix changed: %v", q.TrackIDs[:2])
+	}
+	if id, ok := q.CurrentTrackID(); !ok || id != "two" {
+		t.Fatalf("current track = %q ok=%v, want two", id, ok)
+	}
+
+	want := map[string]bool{"three": true, "four": true, "five": true, "six": true}
+	for _, id := range q.TrackIDs[2:] {
+		if !want[id] {
+			t.Fatalf("unexpected shuffled track %q in %v", id, q.TrackIDs[2:])
+		}
+		delete(want, id)
+	}
+	if len(want) != 0 {
+		t.Fatalf("shuffle lost tracks: %v", want)
+	}
+}
+
+func TestQueueShuffleNilSourceLeavesQueueUnchanged(t *testing.T) {
+	q := NewQueue([]string{"one", "two", "three"})
+	before := append([]string(nil), q.TrackIDs...)
+	q.Shuffle(nil)
+	if !reflect.DeepEqual(q.TrackIDs, before) {
+		t.Fatalf("queue changed with nil source: got %v want %v", q.TrackIDs, before)
 	}
 }

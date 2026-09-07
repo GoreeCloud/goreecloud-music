@@ -8,22 +8,20 @@ The project is being developed as original GoreeCloud-owned software. Its long-t
 
 ## Current development state
 
-The initial native foundation is merged to `main`. Milestone 1 development now includes:
+The original native foundation is merged to `main`. Current first-party implementation includes:
 
 - Go HTTP API service with bounded `/healthz` and `/api/v1/about` endpoints.
-- React + TypeScript web-client foundation.
-- Initial Glaze UI music application shell and persistent player surface.
-- PostgreSQL development environment, runtime driver wiring, bounded connection lifecycle, and embedded schema migrations.
-- Controlled migration execution behind `GOREECLOUD_MUSIC_AUTO_MIGRATE`, which is disabled by default.
-- Multi-user domain types for users, libraries, memberships, artists, albums, tracks, and track files.
-- Persistence interfaces plus an initial PostgreSQL store implementation.
-- Request-principal and library authorization foundations with a development-only identity middleware that is disabled by default.
-- Persistence-backed `GET /api/v1/me/libraries` support when a database and identity context are configured.
-- Recursive audio-file discovery for common music formats and local ffprobe metadata extraction foundations.
-- Domain, authorization, scanner, metadata, and HTTP API tests.
-- Docker and CI foundations.
+- React + TypeScript web-client foundation and initial Glaze UI music application shell.
+- PostgreSQL runtime wiring, bounded connection lifecycle, and embedded schema migrations with controlled execution.
+- Multi-user domain types, request-principal handling, persisted library membership, and separate library read/manage authorization boundaries.
+- Authorization-aware Resonance Library scanning and PostgreSQL reconciliation for artists, albums, tracks, track files, metadata, and local album artwork.
+- Authorized library browse APIs for albums and tracks plus authorized album-artwork delivery.
+- Local ffprobe/FFmpeg-backed metadata and artwork handling without requiring an external metadata or artwork service.
+- Authorized full and bounded single-range HTTP track streaming through the first-party `/api/v1/` surface.
+- Resonance Player queue core with ordered queues, current-track state, Next/Previous navigation, Repeat Off/All/One, and in-development unplayed-tail shuffle behavior.
+- Docker and CI foundations with Go and web validation.
 
-Production deployment is not approved. Production authentication, scanner reconciliation, metadata/artwork persistence ingestion, streaming, transcoding, OpenSubsonic compatibility, and native clients remain under development.
+Production deployment is not approved. Production GoreeCloud Identity integration, persistent per-user queues, native web playback wiring, shuffle-state persistence, favorites, ratings, playlists, transcoding, OpenSubsonic compatibility, offline clients, and broader native clients remain under development.
 
 ## Resonance
 
