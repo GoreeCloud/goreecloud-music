@@ -5,7 +5,10 @@ import (
 	"errors"
 )
 
-var ErrInvalidService = errors.New("invalid playlist service")
+var (
+	ErrInvalidService     = errors.New("invalid playlist service")
+	ErrListingUnsupported = errors.New("playlist repository does not support listing")
+)
 
 type Service struct {
 	repository Repository
@@ -27,6 +30,37 @@ func (s Service) Create(ctx context.Context, userID, playlistID, name string) (R
 		return Record{}, err
 	}
 	return InitializeStored(ctx, s.repository, playlist)
+}
+
+func (s Service) List(ctx context.Context, userID string) ([]CatalogEntry, error) {
+	if s.repository == nil || !validID(userID) {
+		return nil, ErrInvalidService
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	lister, ok := s.repository.(RecordLister)
+	if !ok {
+		return nil, ErrListingUnsupported
+	}
+	records, err := lister.List(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	catalog, err := NewCatalog(userID)
+	if err != nil {
+		return nil, ErrInvalidRepositoryResult
+	}
+	for _, record := range records {
+		playlist, restoreErr := record.Restore()
+		if restoreErr != nil || playlist.UserID() != userID {
+			return nil, ErrInvalidRepositoryResult
+		}
+		if err := catalog.Add(playlist); err != nil {
+			return nil, ErrInvalidRepositoryResult
+		}
+	}
+	return catalog.Entries(), nil
 }
 
 func (s Service) Load(ctx context.Context, userID, playlistID string) (Record, Playlist, error) {
