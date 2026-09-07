@@ -12,10 +12,13 @@ type fakeRepository struct {
 	loadErr      error
 	createErr    error
 	saveErr      error
+	deleteErr    error
 	createResult *Record
 	saveResult   *Record
 	creates      int
 	saves        int
+	deletes      int
+	deleteResult bool
 }
 
 func (f *fakeRepository) Load(context.Context, string, string) (Record, bool, error) {
@@ -53,6 +56,18 @@ func (f *fakeRepository) Save(_ context.Context, expected Revision, playlist Pla
 	}
 	f.record = next
 	return next, nil
+}
+
+func (f *fakeRepository) Delete(_ context.Context, _, _ string, _ Revision) (bool, error) {
+	f.deletes++
+	if f.deleteErr != nil {
+		return false, f.deleteErr
+	}
+	if f.deleteResult {
+		f.found = false
+		return true, nil
+	}
+	return false, nil
 }
 
 func TestInitializeStoredValidatesRepositoryResult(t *testing.T) {
@@ -136,6 +151,52 @@ func TestMutateStoredPropagatesNotFoundMutationAndContext(t *testing.T) {
 	if _, err := MutateStored(ctx, repository, "user-1", "playlist-1", func(current Playlist) (Playlist, error) {
 		return current, nil
 	}); !errors.Is(err, context.Canceled) {
+		t.Fatalf("context error=%v", err)
+	}
+}
+
+func TestDeleteStoredUsesLoadedRevisionAndReturnsDeletedRecord(t *testing.T) {
+	playlist, _ := New("user-1", "playlist-1", "Mix")
+	record, _ := NewRecord(playlist)
+	repository := &fakeRepository{record: record, found: true, deleteResult: true}
+	deleted, err := DeleteStored(context.Background(), repository, "user-1", "playlist-1")
+	if err != nil || repository.deletes != 1 || !sameRecord(deleted, record) || repository.found {
+		t.Fatalf("deleted=%+v deletes=%d found=%v err=%v", deleted, repository.deletes, repository.found, err)
+	}
+}
+
+func TestDeleteStoredFailsClosedOnNotFoundWrongIdentityAndRepositoryResult(t *testing.T) {
+	if _, err := DeleteStored(context.Background(), &fakeRepository{}, "user-1", "playlist-1"); !errors.Is(err, ErrRecordNotFound) {
+		t.Fatalf("not found error=%v", err)
+	}
+
+	wrong, _ := New("user-2", "playlist-2", "Mix")
+	wrongRecord, _ := NewRecord(wrong)
+	repository := &fakeRepository{record: wrongRecord, found: true, deleteResult: true}
+	if _, err := DeleteStored(context.Background(), repository, "user-1", "playlist-1"); !errors.Is(err, ErrInvalidRepositoryResult) || repository.deletes != 0 {
+		t.Fatalf("wrong identity error=%v deletes=%d", err, repository.deletes)
+	}
+
+	playlist, _ := New("user-1", "playlist-1", "Mix")
+	record, _ := NewRecord(playlist)
+	repository = &fakeRepository{record: record, found: true}
+	if _, err := DeleteStored(context.Background(), repository, "user-1", "playlist-1"); !errors.Is(err, ErrInvalidRepositoryResult) || repository.deletes != 1 {
+		t.Fatalf("false result error=%v deletes=%d", err, repository.deletes)
+	}
+}
+
+func TestDeleteStoredPropagatesRepositoryAndContextErrors(t *testing.T) {
+	playlist, _ := New("user-1", "playlist-1", "Mix")
+	record, _ := NewRecord(playlist)
+	want := errors.New("delete failed")
+	repository := &fakeRepository{record: record, found: true, deleteErr: want}
+	if _, err := DeleteStored(context.Background(), repository, "user-1", "playlist-1"); !errors.Is(err, want) {
+		t.Fatalf("delete error=%v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err := DeleteStored(ctx, repository, "user-1", "playlist-1"); !errors.Is(err, context.Canceled) {
 		t.Fatalf("context error=%v", err)
 	}
 }
