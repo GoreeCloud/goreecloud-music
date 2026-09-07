@@ -7,14 +7,17 @@ import (
 )
 
 type fakeQueueRepository struct {
-	record  QueueRecord
-	found   bool
-	loadErr error
-	saveErr error
-	saves   int
+	record       QueueRecord
+	found        bool
+	loadErr      error
+	saveErr      error
+	forcedRecord *QueueRecord
+	loads        int
+	saves        int
 }
 
 func (f *fakeQueueRepository) Load(context.Context, QueueScope) (QueueRecord, bool, error) {
+	f.loads++
 	return f.record, f.found, f.loadErr
 }
 
@@ -27,6 +30,9 @@ func (f *fakeQueueRepository) Save(
 	f.saves++
 	if f.saveErr != nil {
 		return f.record, f.saveErr
+	}
+	if f.forcedRecord != nil {
+		return *f.forcedRecord, nil
 	}
 	next, err := f.record.Update(expected, queue)
 	if err != nil {
@@ -80,6 +86,56 @@ func TestMutateStoredQueueDoesNotSaveMutationFailure(t *testing.T) {
 	}
 }
 
+func TestMutateStoredQueueRejectsInvalidMutatedQueueBeforeSave(t *testing.T) {
+	record, err := NewQueueRecord(NewQueue([]string{"a"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository := &fakeQueueRepository{record: record, found: true}
+
+	returned, err := MutateStoredQueue(context.Background(), repository, "scope", func(queue *Queue) error {
+		queue.Current = 99
+		return nil
+	})
+	if err == nil || returned.Revision() != record.Revision() || repository.saves != 0 {
+		t.Fatalf("returned revision=%d error=%v saves=%d", returned.Revision(), err, repository.saves)
+	}
+}
+
+func TestMutateStoredQueueRejectsRepositoryRevisionMismatch(t *testing.T) {
+	record, err := NewQueueRecord(NewQueue([]string{"a"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository := &fakeQueueRepository{record: record, found: true, forcedRecord: &record}
+
+	returned, err := MutateStoredQueue(context.Background(), repository, "scope", func(queue *Queue) error {
+		return queue.Append("b")
+	})
+	if !errors.Is(err, ErrInvalidQueueRepositoryResult) || returned.Revision() != record.Revision() || repository.saves != 1 {
+		t.Fatalf("returned revision=%d error=%v saves=%d", returned.Revision(), err, repository.saves)
+	}
+}
+
+func TestMutateStoredQueueRejectsRepositoryPayloadMismatch(t *testing.T) {
+	record, err := NewQueueRecord(NewQueue([]string{"a"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrong, err := record.Update(record.Revision(), NewQueue([]string{"other"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository := &fakeQueueRepository{record: record, found: true, forcedRecord: &wrong}
+
+	_, err = MutateStoredQueue(context.Background(), repository, "scope", func(queue *Queue) error {
+		return queue.Append("b")
+	})
+	if !errors.Is(err, ErrInvalidQueueRepositoryResult) {
+		t.Fatalf("error = %v, want invalid repository result", err)
+	}
+}
+
 func TestMutateStoredQueuePropagatesStaleWriter(t *testing.T) {
 	record, err := NewQueueRecord(NewQueue([]string{"a"}))
 	if err != nil {
@@ -110,5 +166,13 @@ func TestMutateStoredQueueRejectsNilRepository(t *testing.T) {
 	_, err := MutateStoredQueue(context.Background(), nil, "scope", func(*Queue) error { return nil })
 	if !errors.Is(err, ErrInvalidQueueMutation) {
 		t.Fatalf("error = %v, want invalid queue mutation", err)
+	}
+}
+
+func TestMutateStoredQueueRejectsInvalidScopeBeforeRepositoryAccess(t *testing.T) {
+	repository := &fakeQueueRepository{}
+	_, err := MutateStoredQueue(context.Background(), repository, QueueScope(" bad "), func(*Queue) error { return nil })
+	if !errors.Is(err, ErrInvalidQueueScope) || repository.loads != 0 || repository.saves != 0 {
+		t.Fatalf("error=%v loads=%d saves=%d", err, repository.loads, repository.saves)
 	}
 }
