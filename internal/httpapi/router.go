@@ -28,6 +28,7 @@ type Dependencies struct {
 	Artwork   AlbumArtworkStore
 	Stream    TrackStreamStore
 	Scanner   LibraryScanner
+	Playlists PlaylistService
 }
 
 func NewRouter() http.Handler {
@@ -39,6 +40,14 @@ func NewRouterWithDependencies(deps Dependencies) http.Handler {
 	mux.HandleFunc("GET /healthz", health)
 	mux.HandleFunc("GET /api/v1/about", about)
 	mux.Handle("GET /api/v1/me/libraries", librariesHandler{store: deps.Store})
+	mux.Handle("GET /api/v1/me/playlists", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "list"})
+	mux.Handle("POST /api/v1/me/playlists", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "create"})
+	mux.Handle("GET /api/v1/me/playlists/{playlistID}", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "get"})
+	mux.Handle("PATCH /api/v1/me/playlists/{playlistID}", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "rename"})
+	mux.Handle("POST /api/v1/me/playlists/{playlistID}/tracks", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "append"})
+	mux.Handle("POST /api/v1/me/playlists/{playlistID}/tracks/insert", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "insert"})
+	mux.Handle("POST /api/v1/me/playlists/{playlistID}/tracks/move", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "move"})
+	mux.Handle("DELETE /api/v1/me/playlists/{playlistID}/tracks/{index}", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "remove"})
 	mux.Handle("GET /api/v1/libraries/{libraryID}/albums", catalogHandler{store: deps.Store, catalog: deps.Catalog, kind: "albums"})
 	mux.Handle("GET /api/v1/libraries/{libraryID}/albums/{albumID}/artwork", albumArtworkHandler{store: deps.Store, artwork: deps.Artwork})
 	mux.Handle("GET /api/v1/libraries/{libraryID}/tracks", catalogHandler{store: deps.Store, catalog: deps.Catalog, kind: "tracks"})
@@ -75,6 +84,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 			"artwork-delivery",
 			"library-catalog-browse",
 			"byte-range-streaming",
+			"native-playlists",
 			"native-api",
 			"open-subsonic-planned",
 		},
