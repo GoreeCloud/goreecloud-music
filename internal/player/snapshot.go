@@ -1,6 +1,9 @@
 package player
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 var ErrInvalidQueueSnapshot = errors.New("invalid queue snapshot")
 
@@ -15,7 +18,7 @@ func (q Queue) Snapshot() QueueSnapshot {
 }
 
 func RestoreQueue(snapshot QueueSnapshot) (Queue, error) {
-	if !validRepeatMode(snapshot.Repeat) {
+	if !validRepeatMode(snapshot.Repeat) || !validSnapshotTrackIDs(snapshot.TrackIDs) {
 		return Queue{}, ErrInvalidQueueSnapshot
 	}
 	if len(snapshot.TrackIDs) == 0 {
@@ -30,4 +33,13 @@ func RestoreQueue(snapshot QueueSnapshot) (Queue, error) {
 
 func validRepeatMode(mode RepeatMode) bool {
 	return mode == RepeatOff || mode == RepeatAll || mode == RepeatOne
+}
+
+func validSnapshotTrackIDs(trackIDs []string) bool {
+	for _, trackID := range trackIDs {
+		if strings.TrimSpace(trackID) == "" {
+			return false
+		}
+	}
+	return true
 }
