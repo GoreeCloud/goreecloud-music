@@ -15,11 +15,11 @@ import (
 
 type fakePlaylistDeleteService struct {
 	*fakePlaylistService
-	deleted    playlists.Record
-	deleteErr  error
+	deleted     playlists.Record
+	deleteErr   error
 	deleteCalls int
-	deleteUser string
-	deleteID   string
+	deleteUser  string
+	deleteID    string
 }
 
 func (f *fakePlaylistDeleteService) Delete(_ context.Context, userID, playlistID string) (playlists.Record, error) {
