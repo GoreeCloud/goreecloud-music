@@ -1,5 +1,14 @@
 package player
 
+import (
+	"bytes"
+	"errors"
+)
+
+const MaxQueueRecordPayloadBytes = 64 * 1024
+
+var ErrInvalidQueueRecord = errors.New("invalid queue record")
+
 // QueueRecord is a storage-neutral persistence value. The encoded queue payload
 // is kept private so callers cannot mutate a record without passing through the
 // versioned snapshot and optimistic-revision boundaries.
@@ -13,7 +22,31 @@ func NewQueueRecord(queue Queue) (QueueRecord, error) {
 	if err != nil {
 		return QueueRecord{}, err
 	}
-	return QueueRecord{revision: 0, payload: append([]byte(nil), payload...)}, nil
+	return queueRecordFromCanonicalPayload(0, payload)
+}
+
+// RestoreQueueRecord reconstructs a record returned by an external persistence
+// adapter. Only bounded canonical queue payloads are accepted.
+func RestoreQueueRecord(revision QueueRevision, payload []byte) (QueueRecord, error) {
+	if len(payload) == 0 || len(payload) > MaxQueueRecordPayloadBytes {
+		return QueueRecord{}, ErrInvalidQueueRecord
+	}
+	queue, err := DecodeQueueSnapshot(payload)
+	if err != nil {
+		return QueueRecord{}, err
+	}
+	canonical, err := EncodeQueueSnapshot(queue)
+	if err != nil || !bytes.Equal(payload, canonical) {
+		return QueueRecord{}, ErrInvalidQueueRecord
+	}
+	return queueRecordFromCanonicalPayload(revision, canonical)
+}
+
+func queueRecordFromCanonicalPayload(revision QueueRevision, payload []byte) (QueueRecord, error) {
+	if len(payload) == 0 || len(payload) > MaxQueueRecordPayloadBytes {
+		return QueueRecord{}, ErrInvalidQueueRecord
+	}
+	return QueueRecord{revision: revision, payload: append([]byte(nil), payload...)}, nil
 }
 
 func (r QueueRecord) Revision() QueueRevision {
@@ -40,8 +73,9 @@ func (r QueueRecord) Update(expected QueueRevision, queue Queue) (QueueRecord, e
 	if err != nil {
 		return r, err
 	}
-	return QueueRecord{
-		revision: nextRevision,
-		payload:  append([]byte(nil), payload...),
-	}, nil
+	next, err := queueRecordFromCanonicalPayload(nextRevision, payload)
+	if err != nil {
+		return r, err
+	}
+	return next, nil
 }
