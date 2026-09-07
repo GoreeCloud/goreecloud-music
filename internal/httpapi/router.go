@@ -37,6 +37,7 @@ func NewRouter() http.Handler {
 
 func NewRouterWithDependencies(deps Dependencies) http.Handler {
 	mux := http.NewServeMux()
+	playlistDeletion, _ := deps.Playlists.(PlaylistDeletionService)
 	mux.HandleFunc("GET /healthz", health)
 	mux.HandleFunc("GET /api/v1/about", about)
 	mux.Handle("GET /api/v1/me/libraries", librariesHandler{store: deps.Store})
@@ -44,6 +45,7 @@ func NewRouterWithDependencies(deps Dependencies) http.Handler {
 	mux.Handle("POST /api/v1/me/playlists", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "create"})
 	mux.Handle("GET /api/v1/me/playlists/{playlistID}", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "get"})
 	mux.Handle("PATCH /api/v1/me/playlists/{playlistID}", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "rename"})
+	mux.Handle("DELETE /api/v1/me/playlists/{playlistID}", playlistDeleteHandler{store: deps.Store, service: playlistDeletion})
 	mux.Handle("POST /api/v1/me/playlists/{playlistID}/tracks", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "append"})
 	mux.Handle("POST /api/v1/me/playlists/{playlistID}/tracks/insert", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "insert"})
 	mux.Handle("POST /api/v1/me/playlists/{playlistID}/tracks/move", playlistAPIHandler{store: deps.Store, service: deps.Playlists, operation: "move"})
