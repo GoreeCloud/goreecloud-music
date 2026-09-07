@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -13,18 +14,18 @@ import (
 )
 
 type fakeTrackFavoriteStore struct {
-	track        domain.Track
-	tracks       []domain.Track
-	trackErr     error
-	listErr      error
-	setErr       error
-	setCalls     int
-	setUserID    string
-	setTrackID   string
-	setFavorite  bool
-	lookupCalls  int
-	listUserID   string
-	listCalls    int
+	track       domain.Track
+	tracks      []domain.Track
+	trackErr    error
+	listErr     error
+	setErr      error
+	setCalls    int
+	setUserID   string
+	setTrackID  string
+	setFavorite bool
+	lookupCalls int
+	listUserID  string
+	listCalls   int
 }
 
 func (f *fakeTrackFavoriteStore) TrackForLibrary(_ context.Context, _, _ string) (domain.Track, error) {
