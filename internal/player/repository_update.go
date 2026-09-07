@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	ErrQueueRecordNotFound         = errors.New("queue record not found")
-	ErrInvalidQueueMutation        = errors.New("invalid queue mutation")
+	ErrQueueRecordNotFound          = errors.New("queue record not found")
+	ErrInvalidQueueMutation         = errors.New("invalid queue mutation")
 	ErrInvalidQueueRepositoryResult = errors.New("invalid queue repository result")
 )
 
