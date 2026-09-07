@@ -16,10 +16,16 @@ var ErrInvalidQueueScope = errors.New("invalid queue scope")
 type QueueScope string
 
 func NewQueueScope(value string) (QueueScope, error) {
-	if value == "" || len(value) > MaxQueueScopeLength || strings.TrimSpace(value) != value {
+	scope := QueueScope(value)
+	if !scope.valid() {
 		return "", ErrInvalidQueueScope
 	}
-	return QueueScope(value), nil
+	return scope, nil
+}
+
+func (s QueueScope) valid() bool {
+	value := string(s)
+	return value != "" && len(value) <= MaxQueueScopeLength && strings.TrimSpace(value) == value
 }
 
 // QueueRepository is the persistence boundary for Resonance queue state.
