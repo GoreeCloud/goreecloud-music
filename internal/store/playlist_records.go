@@ -40,6 +40,42 @@ func (s *PostgresStore) Load(ctx context.Context, userID, playlistID string) (pl
 	return record, true, nil
 }
 
+func (s *PostgresStore) List(ctx context.Context, userID string) ([]playlists.Record, error) {
+	if s == nil || s.db == nil || userID == "" {
+		return nil, ErrInvalidPostgresPlaylistStore
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	const query = `
+		SELECT revision::text, payload
+		FROM playlist_records
+		WHERE user_id = $1
+		ORDER BY playlist_id`
+	rows, err := s.db.QueryContext(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	records := make([]playlists.Record, 0)
+	for rows.Next() {
+		record, scanErr := scanPlaylistRecord(rows)
+		if scanErr != nil {
+			return nil, scanErr
+		}
+		playlist, restoreErr := record.Restore()
+		if restoreErr != nil || playlist.UserID() != userID {
+			return nil, playlists.ErrInvalidRepositoryResult
+		}
+		records = append(records, record)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return records, nil
+}
+
 func (s *PostgresStore) Create(ctx context.Context, playlist playlists.Playlist) (playlists.Record, error) {
 	if s == nil || s.db == nil {
 		return playlists.Record{}, ErrInvalidPostgresPlaylistStore
