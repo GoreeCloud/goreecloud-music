@@ -3,6 +3,7 @@ package httpapi
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/GoreeCloud/goreecloud-music/internal/playlists"
 	"github.com/GoreeCloud/goreecloud-music/internal/store"
@@ -43,11 +44,7 @@ func (h playlistDeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		Deleted  bool   `json:"deleted"`
 	}{
 		ID:       playlist.ID(),
-		Revision: formatPlaylistRevisionForAPI(deleted.Revision()),
+		Revision: strconv.FormatUint(uint64(deleted.Revision()), 10),
 		Deleted:  true,
 	})
-}
-
-func formatPlaylistRevisionForAPI(revision playlists.Revision) string {
-	return playlistHTTPResponseRevision(revision)
 }
