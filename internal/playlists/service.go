@@ -84,6 +84,13 @@ func (s Service) Load(ctx context.Context, userID, playlistID string) (Record, P
 	return record, playlist, nil
 }
 
+func (s Service) Delete(ctx context.Context, userID, playlistID string) (Record, error) {
+	if s.repository == nil {
+		return Record{}, ErrInvalidService
+	}
+	return DeleteStored(ctx, s.repository, userID, playlistID)
+}
+
 func (s Service) Rename(ctx context.Context, userID, playlistID, name string) (Record, error) {
 	return s.mutate(ctx, userID, playlistID, func(playlist *Playlist) error {
 		return playlist.Rename(name)
