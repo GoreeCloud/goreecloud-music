@@ -21,6 +21,14 @@ type Repository interface {
 	Save(ctx context.Context, expected Revision, playlist Playlist) (Record, error)
 }
 
+// RecordLister is the optional persisted catalog boundary used by services that
+// can enumerate a user's independently versioned playlist records. Repositories
+// that do not provide durable listing can still satisfy Repository without
+// pretending that an in-memory catalog is authoritative after restart.
+type RecordLister interface {
+	List(ctx context.Context, userID string) ([]Record, error)
+}
+
 func InitializeStored(
 	ctx context.Context,
 	repository Repository,
