@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -153,8 +154,8 @@ func TestPlaylistAPIRejectsUnknownTrailingAndOversizedJSON(t *testing.T) {
 	service := &fakePlaylistService{}
 	router := playlistTestRouter(service)
 	for name, body := range map[string]string{
-		"unknown":  `{"id":"playlist-1","name":"Mix","extra":true}`,
-		"trailing": `{"id":"playlist-1","name":"Mix"}{}`,
+		"unknown":   `{"id":"playlist-1","name":"Mix","extra":true}`,
+		"trailing":  `{"id":"playlist-1","name":"Mix"}{}`,
 		"oversized": `{"id":"playlist-1","name":"` + strings.Repeat("x", maxPlaylistRequestBodyBytes) + `"}`,
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -247,7 +248,7 @@ func TestPlaylistAPIRemoveRejectsInvalidIndexBeforeService(t *testing.T) {
 
 func playlistTestRouter(service PlaylistService) http.Handler {
 	return NewRouterWithDependencies(Dependencies{
-		Store: fakeMusicStore{user: domain.User{ID: "user-1", Role: domain.RoleUser}},
+		Store:     fakeMusicStore{user: domain.User{ID: "user-1", Role: domain.RoleUser}},
 		Playlists: service,
 	})
 }
