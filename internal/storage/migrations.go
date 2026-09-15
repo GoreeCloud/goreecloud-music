@@ -33,11 +33,11 @@ var migrations = []Migration{
 	{
 		ID:   "0001-core-application-state",
 		From: UninitializedVersion,
-		To:   CurrentVersion,
+		To:   1,
 		Changes: []Change{
 			{Kind: ChangeCreateEntity, Entity: "schema_metadata", Detail: "schema version and migration metadata"},
 			{Kind: ChangeCreateEntity, Entity: "profiles", Detail: "Music profile application state; authentication credentials remain external"},
-			{Kind: ChangeCreateEntity, Entity: "libraries", Detail: "library identity, ownership, and authorization metadata"},
+			{Kind: ChangeCreateEntity, Entity: "libraries", Detail: "library identity, ownership, and source-root metadata"},
 			{Kind: ChangeCreateEntity, Entity: "recordings", Detail: "canonical recording identity and metadata"},
 			{Kind: ChangeCreateEntity, Entity: "releases", Detail: "release and edition identity"},
 			{Kind: ChangeCreateEntity, Entity: "source_items", Detail: "source-provider identity mapping"},
@@ -49,11 +49,17 @@ var migrations = []Migration{
 			{Kind: ChangeCreateEntity, Entity: "play_history", Detail: "profile-scoped listening history with privacy and retention controls"},
 		},
 	},
+	{
+		ID:   "0002-library-memberships",
+		From: 1,
+		To:   CurrentVersion,
+		Changes: []Change{
+			{Kind: ChangeCreateEntity, Entity: "library_memberships", Detail: "per-profile library authorization with explicit roles; concrete backends must preserve existing library-owner access when materializing membership state"},
+		},
+	},
 }
 
 // Backend is the minimum transactional boundary needed by the migration runner.
-// Production engines implement this interface; Milestone 0 intentionally does
-// not select a database engine.
 type Backend interface {
 	SchemaVersion(context.Context) (Version, error)
 	ApplyMigration(context.Context, Migration) error
