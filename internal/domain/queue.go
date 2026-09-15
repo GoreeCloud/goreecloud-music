@@ -6,7 +6,7 @@ type QueueItem struct {
 	ID                QueueItemID
 	OwnerProfileID    ProfileID
 	RecordingID       RecordingID
-	SourceItemID       SourceItemID
+	SourceItemID      SourceItemID
 	RequestedProvider string
 	SelectedAssetID   PlayableAssetID
 	RouteReason       string
