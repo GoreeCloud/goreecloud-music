@@ -80,15 +80,30 @@ Merged PR #14 adds a bounded, authorization-scoped Recently Added library view:
 
 PR #14 merged to `main` as `c20acc1a92ee71ee4173468d97a5980ccf396013`. Exact candidate `8058489efbaafcfd95fbe1b6144a4eb6bc909c6d` passed CI `35028058553` and Platform Contract `35028059131`; post-merge `main` passed CI `35028245616` and Platform Contract `35028246120`.
 
+### Milestone 1 embedded metadata foundation
+
+Merged PR #16 adds a bounded read-only metadata layer between scanner observations and future canonical media ingestion:
+
+- Logical schema version 4 with `library_file_metadata` keyed to durable scanner `file_id` identity.
+- MP3 ID3v2.3/v2.4 textual metadata extraction for title, artist, album, album artist, genre, date/year, track number, and disc number.
+- FLAC Vorbis Comment extraction for the same bounded normalized field set.
+- Source-size and nanosecond-mtime snapshot binding so stored metadata can be marked stale after source changes or missing-file tombstones.
+- Edit permission for extraction/persistence and read permission for retrieval.
+- Rooted source access through Go `os.Root`, explicit symbolic-link rejection, regular-file checks, and snapshot verification before parsing and again before persistence.
+- Bounded parser limits and explicit malformed/unsupported-container failures without creating canonical Recording/Release identity.
+- Schema-v3 → v4 migration coverage plus persistence, authorization, staleness, malformed-input, unsupported-container, and symlink-substitution tests.
+
+PR #16 exact candidate `fc9613d94493e2d5c355f3aba7b6bd2a24a2d334` passed Music CI `35030658032` and Platform Contract `35030658657`. It merged as authoritative `main` commit `bc90686a18338afef650b73357f454d1be541afb`, which passed post-merge Music CI `35030857299` and Platform Contract `35030858110`.
+
 ## Partial / foundation only
 
-- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, profile-scoped Favorites/Ratings/Recently Played, and authorization-scoped Recently Added foundations exist, but metadata/artwork extraction, canonical Recording/Release/Source Item/Playable Asset ingestion from scanned files, filesystem event watchers, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
+- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, bounded MP3/FLAC embedded metadata, profile-scoped Favorites/Ratings/Recently Played, and authorization-scoped Recently Added foundations exist. Approved sidecar metadata, artwork, additional embedded-tag/container formats, canonical Recording/Release/Source Item/Playable Asset ingestion, filesystem event watchers, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
 - Playback routing: decision core exists; actual stream acquisition, codec negotiation, transcoding, and sessions do not.
 - Provider architecture: contract and registry exist; no real provider adapters exist.
 - Authorization: application and durable library-membership foundations exist; production GoreeCloud Identity/Privacy Shield/Wardveil runtime integration does not.
 - API: service shell and operational endpoints exist; product library/search/playback/profile-state APIs are not implemented.
 - Queue: domain/schema foundations exist; queue service operations, recovery, and multi-device continuity are not implemented.
-- Persistence: the SQLite Development backend, schema-v3 scan state, profile-state operations, and Recently Added query are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
+- Persistence: the SQLite Development backend, schema-v4 scanner/metadata state, profile-state operations, and Recently Added query are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
 
 ## Planned
 
