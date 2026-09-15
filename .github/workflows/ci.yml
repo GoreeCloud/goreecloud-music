@@ -24,6 +24,7 @@ jobs:
           if [[ -n "$unformatted" ]]; then
             echo "The following Go files require gofmt with Go 1.27.1:"
             echo "$unformatted"
+            gofmt -d . || true
             exit 1
           fi
       - name: Vet
