@@ -1,4 +1,4 @@
-schema_version: '0.2'
+schema_version: '0.3'
 component:
   type: application
   id: goreecloud-music
@@ -66,6 +66,13 @@ platform_systems:
       - SPECIFICATIONS.md
       - SECURITY.md
     notes: Account, profile, session, device, and authorization integration are planned; no GoreeCloud Identity runtime acceptance is established.
+  sync:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - SPECIFICATIONS.md
+      - FEATURE-ROADMAP.md
+    notes: Cross-device progress, queues, preferences, playlists, and other authorized Music state are planned to synchronize, but no accepted GoreeCloud Sync dataset contract or runtime reconciliation evidence is established.
 health:
   health_endpoint: null
   readiness_endpoint: null
@@ -88,10 +95,10 @@ continuity:
       - Preserve original media independently and use documented portable metadata and state formats where practical.
 external_dependencies: []
 compatibility:
-  platform_contract: '0.2'
+  platform_contract: '0.3'
   glaze_ui_required: '1.4.1'
   requires:
-    - goreecloud-platform-contract==0.2
+    - goreecloud-platform-contract==0.3
     - glaze-ui==1.4.1
   provides:
     - goreecloud-music-development-foundation
@@ -110,5 +117,5 @@ conformance:
     - SECURITY.md
   blockers:
     - Executable Music application or service implementation and automated test evidence are not yet established by this repository baseline.
-    - Runtime integrations for Manager, Privacy Shield, Wardveil Security, Everkeep, Glaze UI, Mesh, and Identity are not accepted.
+    - Runtime integrations for Manager, Privacy Shield, Wardveil Security, Everkeep, Glaze UI, Mesh, Identity, and Sync are not accepted.
     - Supported client builds, accessibility validation, packaging, deployment, recovery, release, and production evidence are not established.
