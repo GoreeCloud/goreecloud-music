@@ -12,7 +12,7 @@ type Version uint32
 
 const (
 	UninitializedVersion Version = 0
-	CurrentVersion       Version = 2
+	CurrentVersion       Version = 3
 )
 
 // OwnershipScope documents the authorization boundary that owns a durable
@@ -47,6 +47,7 @@ var currentEntities = []EntityDescriptor{
 	{Name: "profiles", PrimaryKey: "profile_id", Ownership: OwnershipProfile, Purpose: "Music profile application state without authentication credentials"},
 	{Name: "libraries", PrimaryKey: "library_id", Ownership: OwnershipLibrary, Purpose: "library identity, ownership, and source-root metadata"},
 	{Name: "library_memberships", PrimaryKey: "library_id+profile_id", Ownership: OwnershipLibrary, Purpose: "per-profile library authorization and role state"},
+	{Name: "library_files", PrimaryKey: "file_id", Ownership: OwnershipLibrary, Purpose: "source-preserving filesystem observations used for incremental library reconciliation"},
 	{Name: "recordings", PrimaryKey: "recording_id", Ownership: OwnershipLibrary, Purpose: "canonical recording identity and library metadata"},
 	{Name: "releases", PrimaryKey: "release_id", Ownership: OwnershipLibrary, Purpose: "release and edition identity"},
 	{Name: "source_items", PrimaryKey: "source_item_id", Ownership: OwnershipLibrary, Purpose: "provider-specific source identity mappings"},
@@ -104,7 +105,7 @@ func (s Schema) Validate() error {
 		}
 	}
 
-	required := []string{"schema_metadata", "profiles", "libraries", "library_memberships", "recordings", "releases", "source_items", "playable_assets", "queues", "queue_items"}
+	required := []string{"schema_metadata", "profiles", "libraries", "library_memberships", "library_files", "recordings", "releases", "source_items", "playable_assets", "queues", "queue_items"}
 	for _, name := range required {
 		if _, ok := seen[name]; !ok {
 			return fmt.Errorf("schema missing required entity %q", name)
