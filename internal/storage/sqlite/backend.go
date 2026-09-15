@@ -270,6 +270,16 @@ func (b *Backend) ApplyMigration(ctx context.Context, migration storage.Migratio
 		}
 	}
 
+	// Schema v1 stored canonical ownership directly on libraries. When schema v2
+	// materializes explicit memberships, preserve that previously authorized
+	// owner access in the same transaction before advancing the schema version.
+	if migration.ID == "0002-library-memberships" {
+		if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO library_memberships(library_id, profile_id, permission, created_at, updated_at)
+			SELECT library_id, owner_profile_id, 'owner', created_at, updated_at FROM libraries`); err != nil {
+			return fmt.Errorf("backfill library owner memberships: %w", err)
+		}
+	}
+
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	metadata := [][2]string{
 		{"schema_version", strconv.FormatUint(uint64(migration.To), 10)},

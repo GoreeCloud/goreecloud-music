@@ -54,7 +54,7 @@ var migrations = []Migration{
 		From: 1,
 		To:   CurrentVersion,
 		Changes: []Change{
-			{Kind: ChangeCreateEntity, Entity: "library_memberships", Detail: "per-profile library authorization with explicit roles"},
+			{Kind: ChangeCreateEntity, Entity: "library_memberships", Detail: "per-profile library authorization with explicit roles; concrete backends must preserve existing library-owner access when materializing membership state"},
 		},
 	},
 }

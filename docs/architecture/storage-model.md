@@ -48,7 +48,7 @@ The migration catalog is forward-only and versioned independently from the Goree
 
 The accepted initial migration is `0001-core-application-state`, moving an uninitialized backend from schema version `0` to `1`.
 
-Draft PR #7 adds `0002-library-memberships`, moving schema version `1` to `2` and creating the explicit per-profile library authorization relation.
+Draft PR #7 adds `0002-library-memberships`, moving schema version `1` to `2` and creating the explicit per-profile library authorization relation. The SQLite implementation performs the table creation and owner-membership backfill in the same transaction, preserving existing schema-v1 library owners before the stored schema version advances. A regression test constructs real schema-v1 SQLite state, upgrades it to v2, and verifies that owner authorization and library visibility survive the migration.
 
 The catalog validator fails closed when migration identifiers are missing or duplicated, versions are non-contiguous or non-forward, changes are empty or unsupported, a change references an unknown entity, an entity is created more than once, the current schema is not fully represented, or the catalog does not end at the declared current schema version.
 
@@ -78,6 +78,7 @@ The candidate configures:
 - SQLite defensive mode;
 - a bounded busy timeout;
 - transactional schema migrations;
+- schema-v1 to schema-v2 owner-authorization preservation;
 - STRICT tables for the current physical schema;
 - a local Development database path configurable through `GOREECLOUD_MUSIC_DB`.
 

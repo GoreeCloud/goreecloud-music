@@ -2,12 +2,15 @@ package sqlitestore
 
 import (
 	"context"
+	"database/sql"
 	"net/url"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/GoreeCloud/goreecloud-music/internal/domain"
 	"github.com/GoreeCloud/goreecloud-music/internal/storage"
+	sqlite "modernc.org/sqlite"
 )
 
 func TestBackendMigratesAndPersistsLibraryAuthorization(t *testing.T) {
@@ -66,6 +69,48 @@ func TestBackendMigratesAndPersistsLibraryAuthorization(t *testing.T) {
 	}
 	defer backend.Close()
 	assertPermission(t, ctx, backend, bob, library, LibraryPermissionRead, true)
+}
+
+func TestMigrationFromVersionOnePreservesOwnerAuthorization(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "music.db")
+	dsn, err := DSN(path)
+	if err != nil {
+		t.Fatalf("DSN() error = %v", err)
+	}
+	connector, err := sqlite.NewConnector(dsn)
+	if err != nil {
+		t.Fatalf("NewConnector() error = %v", err)
+	}
+	db := sql.OpenDB(connector)
+	legacy := &Backend{db: db}
+	if err := storage.Migrate(ctx, legacy, 1); err != nil {
+		t.Fatalf("migrate to schema v1: %v", err)
+	}
+	now := time.Now().UTC().Format(time.RFC3339Nano)
+	if _, err := db.ExecContext(ctx, `INSERT INTO profiles(profile_id, display_name, created_at, updated_at) VALUES(?, ?, ?, ?)`, "profile:owner", "Owner", now, now); err != nil {
+		t.Fatalf("insert v1 profile: %v", err)
+	}
+	if _, err := db.ExecContext(ctx, `INSERT INTO libraries(library_id, owner_profile_id, name, root_path, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?)`, "library:legacy", "profile:owner", "Legacy", filepath.Join(t.TempDir(), "legacy-media"), now, now); err != nil {
+		t.Fatalf("insert v1 library: %v", err)
+	}
+	if err := db.Close(); err != nil {
+		t.Fatalf("close v1 database: %v", err)
+	}
+
+	backend, err := Open(ctx, path)
+	if err != nil {
+		t.Fatalf("Open() after v1 state error = %v", err)
+	}
+	defer backend.Close()
+	assertPermission(t, ctx, backend, domain.ProfileID("profile:owner"), domain.LibraryID("library:legacy"), LibraryPermissionOwner, true)
+	libraries, err := backend.LibrariesForProfile(ctx, domain.ProfileID("profile:owner"))
+	if err != nil {
+		t.Fatalf("LibrariesForProfile() after migration error = %v", err)
+	}
+	if len(libraries) != 1 || libraries[0].ID != domain.LibraryID("library:legacy") {
+		t.Fatalf("migrated owner libraries = %#v", libraries)
+	}
 }
 
 func TestLibraryAuthorizationFailsClosed(t *testing.T) {
