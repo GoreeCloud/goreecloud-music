@@ -44,7 +44,7 @@ func TestPlanFromUninitializedToCurrent(t *testing.T) {
 	for i, migration := range plan {
 		ids[i] = migration.ID
 	}
-	if want := []string{"0001-core-application-state"}; !reflect.DeepEqual(ids, want) {
+	if want := []string{"0001-core-application-state", "0002-library-memberships"}; !reflect.DeepEqual(ids, want) {
 		t.Fatalf("plan ids = %v, want %v", ids, want)
 	}
 }
@@ -63,7 +63,7 @@ func TestMigrateAdvancesBackend(t *testing.T) {
 	if backend.version != CurrentVersion {
 		t.Fatalf("version = %d, want %d", backend.version, CurrentVersion)
 	}
-	if want := []string{"0001-core-application-state"}; !reflect.DeepEqual(backend.applied, want) {
+	if want := []string{"0001-core-application-state", "0002-library-memberships"}; !reflect.DeepEqual(backend.applied, want) {
 		t.Fatalf("applied = %v, want %v", backend.applied, want)
 	}
 }

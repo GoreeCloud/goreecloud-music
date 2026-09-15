@@ -12,7 +12,7 @@ type Version uint32
 
 const (
 	UninitializedVersion Version = 0
-	CurrentVersion       Version = 1
+	CurrentVersion       Version = 2
 )
 
 // OwnershipScope documents the authorization boundary that owns a durable
@@ -45,11 +45,12 @@ type Schema struct {
 var currentEntities = []EntityDescriptor{
 	{Name: "schema_metadata", PrimaryKey: "key", Ownership: OwnershipSystem, Purpose: "schema version and migration metadata"},
 	{Name: "profiles", PrimaryKey: "profile_id", Ownership: OwnershipProfile, Purpose: "Music profile application state without authentication credentials"},
-	{Name: "libraries", PrimaryKey: "library_id", Ownership: OwnershipLibrary, Purpose: "library identity, ownership, and authorization metadata"},
+	{Name: "libraries", PrimaryKey: "library_id", Ownership: OwnershipLibrary, Purpose: "library identity, ownership, and source-root metadata"},
+	{Name: "library_memberships", PrimaryKey: "library_id+profile_id", Ownership: OwnershipLibrary, Purpose: "per-profile library authorization and role state"},
 	{Name: "recordings", PrimaryKey: "recording_id", Ownership: OwnershipLibrary, Purpose: "canonical recording identity and library metadata"},
 	{Name: "releases", PrimaryKey: "release_id", Ownership: OwnershipLibrary, Purpose: "release and edition identity"},
 	{Name: "source_items", PrimaryKey: "source_item_id", Ownership: OwnershipLibrary, Purpose: "provider-specific source identity mappings"},
-	{Name: "playable_assets", PrimaryKey: "playable_asset_id", Ownership: OwnershipLibrary, Purpose: "encoded asset metadata, quality, and availability facts"},
+	{Name: "playable_assets", PrimaryKey: "playable_asset_id", Ownership: OwnershipLibrary, Purpose: "encoded asset metadata, quality, path reference, and availability facts"},
 	{Name: "queues", PrimaryKey: "queue_id", Ownership: OwnershipProfile, Purpose: "profile-owned durable queue identity and revision state"},
 	{Name: "queue_items", PrimaryKey: "queue_item_id", Ownership: OwnershipProfile, Purpose: "queue ordering, recording/source intent, selected route, and route reason"},
 	{Name: "favorites", PrimaryKey: "favorite_id", Ownership: OwnershipProfile, Purpose: "profile-scoped favorite state"},
@@ -103,7 +104,7 @@ func (s Schema) Validate() error {
 		}
 	}
 
-	required := []string{"schema_metadata", "profiles", "libraries", "recordings", "releases", "source_items", "playable_assets", "queues", "queue_items"}
+	required := []string{"schema_metadata", "profiles", "libraries", "library_memberships", "recordings", "releases", "source_items", "playable_assets", "queues", "queue_items"}
 	for _, name := range required {
 		if _, ok := seen[name]; !ok {
 			return fmt.Errorf("schema missing required entity %q", name)

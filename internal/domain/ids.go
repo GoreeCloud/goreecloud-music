@@ -12,6 +12,7 @@ type SourceItemID string
 type PlayableAssetID string
 type QueueItemID string
 type ProfileID string
+type LibraryID string
 
 func validateID(kind, value string) error {
 	value = strings.TrimSpace(value)
@@ -65,4 +66,10 @@ func NewProfileID(value string) (ProfileID, error) {
 		return "", err
 	}
 	return ProfileID(strings.TrimSpace(value)), nil
+}
+func NewLibraryID(value string) (LibraryID, error) {
+	if err := validateID("library id", value); err != nil {
+		return "", err
+	}
+	return LibraryID(strings.TrimSpace(value)), nil
 }
