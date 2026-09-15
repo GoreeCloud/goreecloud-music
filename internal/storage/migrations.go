@@ -112,7 +112,7 @@ func ValidateCatalog(catalog []Migration) error {
 			return fmt.Errorf("migration %q must move forward", migration.ID)
 		}
 		if len(migration.Changes) == 0 {
-			return fmt.Errorf("migration %q must declare at least one change")
+			return fmt.Errorf("migration %q must declare at least one change", migration.ID)
 		}
 		for j, change := range migration.Changes {
 			if change.Kind != ChangeCreateEntity {
