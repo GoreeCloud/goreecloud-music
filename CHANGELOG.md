@@ -2,7 +2,7 @@
 title: "GoreeCloud Music — Repository Change Log"
 document_type: "Repository Change Log"
 status: "Active"
-version: "v1.2"
+version: "v1.3"
 classification: "Internal"
 last_updated: "2026-09-15"
 application: "GoreeCloud Music"
@@ -11,6 +11,19 @@ application: "GoreeCloud Music"
 # GoreeCloud Music — Repository Change Log
 
 This repository changelog records verified source and repository-documentation changes. The canonical GoreeCloud product changelog is `GoreeCloud/Changelogs/Change Log — Music.md`. Planned roadmap items are not completed changes merely because they appear in documentation.
+
+## September 15, 2026 — Embedded metadata extraction foundation
+
+- PR #16 merged the bounded Milestone 1 embedded metadata foundation as signed authoritative `main` commit `bc90686a18338afef650b73357f454d1be541afb`.
+- Exact candidate `fc9613d94493e2d5c355f3aba7b6bd2a24a2d334` passed Music CI `35030658032` and Platform Contract `35030658657`.
+- Post-merge `main` passed Music CI `35030857299` and Platform Contract `35030858110`.
+- Schema version 4 adds durable `library_file_metadata` keyed by scanner `file_id`, storing normalized embedded metadata plus the source size/mtime snapshot used for extraction.
+- Added bounded read-only MP3 ID3v2.3/v2.4 and FLAC Vorbis Comment extraction for title, artist, album, album artist, genre, date/year text, track-number text, and disc-number text.
+- Metadata extraction/replacement requires current library edit permission; retrieval requires current library read permission.
+- Source reads are rooted through Go `os.Root`, symbolic-link path components remain rejected under the Music no-symlink policy, and scanner size/mtime is verified before parsing and again before persistence.
+- Added migration regression coverage preserving real schema-v3 library/file state through schema-v4 upgrade, plus parser, authorization, freshness, missing-file, unsupported-container, and symlink-substitution tests.
+- Extracted tags remain per-file observation facts. They do not create canonical Recording/Release/Source Item/Playable Asset identity and do not mutate original media.
+- Approved sidecars, artwork, additional container/tag formats, codec/duration/quality probing, canonical ingestion, metadata APIs/UI, recovery acceptance, release eligibility, and Stable status remain open.
 
 ## September 15, 2026 — Authorization-scoped Recently Added foundation
 
