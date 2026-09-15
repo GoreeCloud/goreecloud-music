@@ -9,7 +9,7 @@ GoreeCloud Music is GoreeCloud's first-party, self-hosted-first music platform. 
 **Current milestone:** Milestone 0 — Architecture Foundation  
 **Stable:** No
 
-The current repository implements only the architecture foundation: core domain identities, availability semantics, provider and authorization contracts, deterministic source routing, queue identity, a minimal health/build-info service, tests, CI, and truthful Platform-System metadata. It does **not** yet implement a usable music library, playback server, provider integration, offline downloads, recommendations, or user-facing clients.
+The current repository implements the architecture foundation: core domain identities, availability semantics, provider and authorization contracts, deterministic source routing, queue identity, an engine-neutral application-state schema and forward migration contract, a minimal health/build-info service, tests, exact-source CI, and truthful Platform-System metadata. It does **not** yet implement a usable music library, production persistence backend, playback server, provider integration, offline downloads, recommendations, or user-facing clients.
 
 ## Development service
 
@@ -32,9 +32,14 @@ See [`api/openapi.yaml`](api/openapi.yaml) for the current contract.
 - [`FEATURES.md`](FEATURES.md)
 - [`FEATURE-ROADMAP.md`](FEATURE-ROADMAP.md)
 - [`docs/architecture/milestone-0.md`](docs/architecture/milestone-0.md)
+- [`docs/architecture/storage-model.md`](docs/architecture/storage-model.md)
 - [`goreecloud.platform.yaml`](goreecloud.platform.yaml)
 
 The authoritative product specification remains the GoreeCloud Drive record `GoreeCloud/Projects/Project Specification — Music.docx`. Repository documentation must remain materially consistent with that record.
+
+## Storage boundary
+
+The Milestone 0 storage contract defines durable Music application-state identities and forward migration behavior without selecting a production database engine. Original user audio files remain independent from application database state, and reusable authentication/provider secrets are not ordinary application records. A real persistence backend, library scanning/indexing, backup/restore acceptance, and multi-user runtime isolation remain later implementation work.
 
 ## Provider boundary
 
