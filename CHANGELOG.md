@@ -2,7 +2,7 @@
 title: "GoreeCloud Music — Repository Change Log"
 document_type: "Repository Change Log"
 status: "Active"
-version: "v1.2"
+version: "v1.3"
 classification: "Internal"
 last_updated: "2026-09-15"
 application: "GoreeCloud Music"
@@ -11,6 +11,20 @@ application: "GoreeCloud Music"
 # GoreeCloud Music — Repository Change Log
 
 This repository changelog records verified source and repository-documentation changes. The canonical GoreeCloud product changelog is `GoreeCloud/Changelogs/Change Log — Music.md`. Planned roadmap items are not completed changes merely because they appear in documentation.
+
+## September 15, 2026 — Bounded embedded metadata extraction foundation
+
+- PR #16 merged as authoritative `main` commit `bc90686a18338afef650b73357f454d1be541afb`.
+- Exact candidate `fc9613d94493e2d5c355f3aba7b6bd2a24a2d334` passed Music CI `35030658032` and Platform Contract `35030658657`.
+- Post-merge `main` passed Music CI `35030857299` and Platform Contract `35030858110`.
+- Advanced the application-state schema from v3 to v4 with `library_file_metadata`, keyed to scanner `file_id` and bound to the exact source size/mtime observation used for extraction.
+- Added bounded read-only MP3 ID3v2.3/v2.4 and FLAC Vorbis Comment extraction for title, artist, album, album artist, genre, date/year, track number, and disc number.
+- Metadata extraction/storage requires library edit permission; metadata retrieval requires library read permission.
+- Stored metadata becomes non-current when scanner facts change or the source becomes missing; original media remains outside the database.
+- Hardened source access with Go `os.Root`, explicit symbolic-link rejection, regular-file validation, and scanner snapshot verification before parsing and again immediately before persistence.
+- Added schema-v3→v4, parser, persistence, authorization, staleness, malformed-input, unsupported-container, and symlink-substitution tests.
+- The historical stale metadata branch was not force-rewritten; its intended delta was restacked on current `main` before PR #16.
+- This change does not implement approved sidecars, artwork, broader embedded formats, canonical Recording/Release/Source Item/Playable Asset ingestion, codec/container probing, public APIs/UI, production recovery, release eligibility, or Stable status.
 
 ## September 15, 2026 — Authorization-scoped Recently Added foundation
 
