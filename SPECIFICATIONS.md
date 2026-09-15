@@ -61,17 +61,46 @@ PR #9 advanced the Development schema to version 3 and established the filesyste
 
 PR #9 merged as `ac42ebc6f5fe3143c0cbc77cd6c3fce7397f44ac`; post-merge Music CI `35020139101` and Platform Contract `35020140030` passed.
 
+### Profile-scoped Favorites, Ratings, and Recently Played
+
+PR #12 implemented bounded application-state operations over existing `favorites`, `ratings`, and `play_history` entities:
+
+- profile-owned Favorite set/clear and bounded listing;
+- profile-owned 0–100 Rating set/read/clear;
+- profile-owned Recently Played event recording and bounded recent-history listing;
+- current library-read authorization validation for recording-scoped profile state;
+- membership-filtered Favorite/Recently Played retrieval after access revocation;
+- cross-profile isolation for the bounded implemented paths;
+- validation, race-test, and build coverage.
+
+PR #12 merged as `168d19d07e9b32e0089a512b9e6b7964db76ece1`; exact candidate `2721d2b7660763534396be4017ab9c18e47078da` passed Music CI `35025974258` and Platform Contract `35025974812`, and post-merge `main` passed Music CI `35026228206` and Platform Contract `35026228918`.
+
+### Authorization-scoped Recently Added
+
+PR #14 implemented a bounded Recently Added library view over existing canonical recording application state:
+
+- `RecentlyAddedForProfile` queries `recordings.added_at` without a schema change;
+- newest-first deterministic ordering;
+- recording/library identity, title, artist, and added timestamp output;
+- current `library_memberships` filtering for the requesting profile;
+- revocation/inaccessible-library suppression without mutating underlying canonical recording state;
+- validation and isolation coverage for ordering, grants, revocation, malformed profile IDs, and result limits.
+
+PR #14 merged as `c20acc1a92ee71ee4173468d97a5980ccf396013`; exact candidate `8058489efbaafcfd95fbe1b6144a4eb6bc909c6d` passed Music CI `35028058553` and Platform Contract `35028059131`, and post-merge `main` passed Music CI `35028245616` and Platform Contract `35028246120`.
+
 ## Storage and media boundary
 
 Original music files remain in GoreeCloud-controlled library storage. SQLite stores application state and references/observations only; it does not embed original media bytes. Media-file loss and database-state loss remain separate recovery domains. Reusable authentication credentials and provider secrets remain outside ordinary Music application-state records.
 
 The deterministic library-file identifier used by the scanner is a reconciliation identity derived from library identity and relative path. It is not a content hash and does not establish canonical Recording identity.
 
+Favorites, Ratings, Recently Played, and Recently Added use existing application-state records/entities; their implementation does not itself qualify canonical media ingestion or production persistence.
+
 ## Authorization boundary
 
 Durable library membership supplies application authorization facts but does not replace higher-level GoreeCloud authority. API/service operations must continue to validate the requesting profile, operation, purpose, applicable Privacy Shield authorization, Wardveil requirements, and future GoreeCloud Identity/session authority.
 
-Queue persistence or previously observed file state does not grant perpetual access. Authorization must be rechecked at the operation/playback boundary where required.
+Queue persistence, profile state, Recently Added results, or previously observed file state do not grant perpetual access. Authorization must be rechecked at the operation/playback/retrieval boundary where required.
 
 ## Current status boundary
 
@@ -81,8 +110,8 @@ The verified foundations do **not** establish:
 - artwork discovery/processing;
 - canonical Recording, Release, Source Item, or Playable Asset ingestion from scanned files;
 - event-driven filesystem watchers/change notifications;
-- favorites, ratings, or recent-activity service operations;
-- library/search product APIs;
+- Home/user-facing Recently Added integration;
+- library/search/profile-state product APIs;
 - actual audio streaming/transcoding/playback sessions;
 - production authentication/session integration;
 - real external provider adapters;
@@ -91,4 +120,4 @@ The verified foundations do **not** establish:
 - current-Stable Glaze UI acceptance;
 - release eligibility or Stable qualification.
 
-Those remain later Milestone 1 or subsequent milestone obligations and must not be inferred from the persistence/scanner foundations.
+Those remain later Milestone 1 or subsequent milestone obligations and must not be inferred from the persistence/scanner/profile-state/Recently Added foundations.

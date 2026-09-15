@@ -2,11 +2,13 @@
 
 ## Status
 
-Development implementation is active on `main`. PR #7 merged the bounded SQLite persistence and per-user library-authorization foundation as `564ac6a792070996dc39b103232c39b4fca95074`. PR #9 then merged the bounded source-preserving library-scanning and filesystem-reconciliation foundation as `ac42ebc6f5fe3143c0cbc77cd6c3fce7397f44ac`. PR #12 subsequently merged the bounded authorization-scoped Favorites, Ratings, and Recently Played persistence foundation as `168d19d07e9b32e0089a512b9e6b7964db76ece1`.
+Development implementation is active on `main`. PR #7 merged the bounded SQLite persistence and per-user library-authorization foundation as `564ac6a792070996dc39b103232c39b4fca95074`. PR #9 then merged the bounded source-preserving library-scanning and filesystem-reconciliation foundation as `ac42ebc6f5fe3143c0cbc77cd6c3fce7397f44ac`. PR #12 subsequently merged the bounded authorization-scoped Favorites, Ratings, and Recently Played persistence foundation as `168d19d07e9b32e0089a512b9e6b7964db76ece1`. PR #14 then merged the bounded authorization-scoped Recently Added query foundation as `c20acc1a92ee71ee4173468d97a5980ccf396013`.
 
 PR #9's exact candidate `a6579a7e029881ef80d8d202833de19deceb2da4` passed Music CI `35019904248` and Platform Contract `35019905704`. Its merged revision passed post-merge Music CI `35020139101` and Platform Contract `35020140030`.
 
 PR #12's exact candidate `2721d2b7660763534396be4017ab9c18e47078da` passed Music CI `35025974258` and Platform Contract `35025974812`. The merged `main` revision passed post-merge Music CI `35026228206` and Platform Contract `35026228918`.
+
+PR #14's exact candidate `8058489efbaafcfd95fbe1b6144a4eb6bc909c6d` passed Music CI `35028058553` and Platform Contract `35028059131`. The merged `main` revision passed post-merge Music CI `35028245616` and Platform Contract `35028246120`.
 
 This record describes implemented Milestone 1 foundations and remaining work. It is not Milestone 1 completion, release evidence, production persistence acceptance, recovery acceptance, or Stable qualification.
 
@@ -61,13 +63,24 @@ Merged PR #12 adds:
 
 PR #12 deliberately does not add a new schema version because `favorites`, `ratings`, and `play_history` already exist in the current application-state schema. Its tests seed canonical recording rows directly because recording ingestion remains a separate Milestone 1 obligation.
 
+Merged PR #14 adds:
+
+- a bounded `RecentlyAddedForProfile` query over canonical `recordings.added_at` application state;
+- newest-first ordering with deterministic recording-ID tie breaking;
+- returned recording ID, library ID, title, artist, and added timestamp;
+- current `library_memberships` filtering for the requesting profile;
+- suppression of inaccessible or revoked-library recordings without rewriting/deleting underlying library state;
+- tests covering ordering, cross-library isolation, explicit access grants, authorization revocation, result bounds, malformed profile IDs, race testing, and service build.
+
+PR #14 deliberately does not add a new schema version or dependency. Its tests seed canonical recording rows directly because canonical recording ingestion from verified scanned media remains a separate Milestone 1 obligation. The query foundation does not itself implement Home UI or HTTP API exposure.
+
 ## Data boundary
 
 Original music files remain in GoreeCloud-controlled library storage. SQLite stores application state and file references/observations only. Media-file loss and database loss are therefore separate recovery domains.
 
 A `library_files` row is a filesystem observation, not a canonical Recording identity, content fingerprint, or playable-asset qualification. File extension recognition does not prove actual codec validity.
 
-Favorites, ratings, and ordinary listening history are profile-owned application state. They do not replace operational telemetry, security/audit records, or Privacy Shield purpose/retention controls where those controls apply.
+Favorites, ratings, ordinary listening history, and Recently Added views are application state derived from authorized library records. They do not replace operational telemetry, security/audit records, or Privacy Shield purpose/retention controls where those controls apply.
 
 Reusable secrets and external-provider credentials are outside ordinary Music application-state records.
 
@@ -81,6 +94,8 @@ Reading scanner state requires library read permission. Running a scan or direct
 
 Favorites, ratings, and Recently Played mutations require the profile to retain current read permission to the recording's library. Favorite/history listing joins current library membership so revoked library access suppresses stale state from normal user-facing retrieval. A direct rating read also revalidates current recording/library authorization.
 
+Recently Added retrieval joins current library membership for the requesting profile. Records from inaccessible or revoked libraries are excluded without deleting the underlying canonical recording state.
+
 The backend provides durable authorization facts; it does not replace higher-level authorization. Service/API operations must continue to validate the requesting profile, action, purpose, Privacy Shield authorization where applicable, Wardveil requirements, and future Identity authority.
 
 ## Remaining Milestone 1 work
@@ -92,7 +107,7 @@ Milestone 1 remains open. Required work includes:
 - recording, release, source-item, and playable-asset ingestion from verified scanned media;
 - codec/container probing beyond filename-extension discovery;
 - filesystem watchers or another approved event-driven change-detection mechanism where appropriate;
-- Recently Added state and queries;
+- Home/user-facing Recently Added integration and API exposure;
 - higher-level Favorites, Ratings, and Recently Played service/API integration;
 - complete multi-user isolation tests across every remaining library query/mutation path;
 - library and local search APIs;
@@ -108,6 +123,8 @@ PR #7's merged revision `564ac6a792070996dc39b103232c39b4fca95074` passed post-m
 PR #9's exact source candidate `a6579a7e029881ef80d8d202833de19deceb2da4` passed Music CI `35019904248`, including exact-source verification, formatting, vet, race tests, and service build, and Platform Contract `35019905704`. It merged as `ac42ebc6f5fe3143c0cbc77cd6c3fce7397f44ac`, which passed post-merge Music CI `35020139101` and Platform Contract `35020140030`.
 
 PR #12's exact source candidate `2721d2b7660763534396be4017ab9c18e47078da` passed Music CI `35025974258`, including exact-source verification, formatting, vet, race tests, and service build, and Platform Contract `35025974812`. It merged as `168d19d07e9b32e0089a512b9e6b7964db76ece1`, which passed post-merge Music CI `35026228206` and Platform Contract `35026228918`.
+
+PR #14's exact source candidate `8058489efbaafcfd95fbe1b6144a4eb6bc909c6d` passed Music CI `35028058553`, including exact-source verification, formatting, vet, race tests, and service build, and Platform Contract `35028059131`. It merged as `c20acc1a92ee71ee4173468d97a5980ccf396013`, which passed post-merge Music CI `35028245616` and Platform Contract `35028246120`.
 
 Those results establish only the checks executed against the merged Development source. They do not establish production deployment, runtime Platform-System acceptance, backup/restore acceptance, current-Stable Glaze UI acceptance, release eligibility, or Stable status.
 

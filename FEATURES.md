@@ -67,15 +67,28 @@ Merged PR #12 adds persistent, profile-owned state for authorized recordings:
 
 PR #12 merged to `main` as `168d19d07e9b32e0089a512b9e6b7964db76ece1`. Exact candidate `2721d2b7660763534396be4017ab9c18e47078da` passed CI `35025974258` and Platform Contract `35025974812`; post-merge `main` passed CI `35026228206` and Platform Contract `35026228918`.
 
+### Milestone 1 Recently Added query foundation
+
+Merged PR #14 adds a bounded, authorization-scoped Recently Added library view:
+
+- Newest-first canonical recording retrieval using existing `recordings.added_at` state.
+- Recording ID, library ID, title, artist, and added timestamp in the returned view.
+- Current `library_memberships` filtering so profiles see only libraries they may currently read.
+- Authorization-revocation suppression without deleting underlying recording/library state.
+- Deterministic recording-ID tie breaking and bounded result limits.
+- Focused tests covering ordering, cross-library isolation, explicit grants, authorization revocation, malformed profile IDs, and limit validation.
+
+PR #14 merged to `main` as `c20acc1a92ee71ee4173468d97a5980ccf396013`. Exact candidate `8058489efbaafcfd95fbe1b6144a4eb6bc909c6d` passed CI `35028058553` and Platform Contract `35028059131`; post-merge `main` passed CI `35028245616` and Platform Contract `35028246120`.
+
 ## Partial / foundation only
 
-- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, and profile-scoped Favorites/Ratings/Recently Played foundations exist, but metadata/artwork extraction, canonical Recording/Release/Source Item/Playable Asset ingestion from scanned files, filesystem event watchers, Recently Added queries, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
+- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, profile-scoped Favorites/Ratings/Recently Played, and authorization-scoped Recently Added foundations exist, but metadata/artwork extraction, canonical Recording/Release/Source Item/Playable Asset ingestion from scanned files, filesystem event watchers, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
 - Playback routing: decision core exists; actual stream acquisition, codec negotiation, transcoding, and sessions do not.
 - Provider architecture: contract and registry exist; no real provider adapters exist.
 - Authorization: application and durable library-membership foundations exist; production GoreeCloud Identity/Privacy Shield/Wardveil runtime integration does not.
 - API: service shell and operational endpoints exist; product library/search/playback/profile-state APIs are not implemented.
 - Queue: domain/schema foundations exist; queue service operations, recovery, and multi-device continuity are not implemented.
-- Persistence: the SQLite Development backend, schema-v3 scan state, and profile-state operations are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
+- Persistence: the SQLite Development backend, schema-v3 scan state, profile-state operations, and Recently Added query are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
 
 ## Planned
 

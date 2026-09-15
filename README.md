@@ -9,11 +9,11 @@ GoreeCloud Music is GoreeCloud's first-party, self-hosted-first music platform. 
 **Current milestone:** Milestone 1 — Native Multi-User Library  
 **Stable:** No
 
-The current Development source includes the accepted Milestone 0 architecture/storage foundation plus bounded Milestone 1 foundations for SQLite application-state persistence, per-profile library authorization, and source-preserving library-file scanning/reconciliation.
+The current Development source includes the accepted Milestone 0 architecture/storage foundation plus bounded Milestone 1 foundations for SQLite application-state persistence, per-profile library authorization, source-preserving library-file scanning/reconciliation, profile-scoped Favorites/Ratings/Recently Played state, and an authorization-scoped Recently Added query.
 
-PR #7 established SQLite persistence, explicit `library_memberships`, profile/library persistence, schema-v1 owner-authorization preservation during migration to schema v2, storage-aware health reporting, and supporting tests. PR #9 advanced the storage schema to version 3 with durable `library_files`, supported-audio discovery, no-symlink traversal, source-preserving Added/Updated/Unchanged/Missing/Restored reconciliation, missing-file tombstones, and permission-gated file-state access. PR #9 merged as `ac42ebc6f5fe3143c0cbc77cd6c3fce7397f44ac`; post-merge Music CI `35020139101` and Platform Contract `35020140030` passed on that exact revision.
+PR #7 established SQLite persistence, explicit `library_memberships`, profile/library persistence, schema-v1 owner-authorization preservation during migration to schema v2, storage-aware health reporting, and supporting tests. PR #9 advanced the storage schema to version 3 with durable `library_files`, supported-audio discovery, no-symlink traversal, source-preserving Added/Updated/Unchanged/Missing/Restored reconciliation, missing-file tombstones, and permission-gated file-state access. PR #12 added authorization-scoped Favorites, Ratings, and Recently Played persistence. PR #14 added the bounded Recently Added query foundation. PR #14 merged as `c20acc1a92ee71ee4173468d97a5980ccf396013`; its exact candidate `8058489efbaafcfd95fbe1b6144a4eb6bc909c6d` passed Music CI `35028058553` and Platform Contract `35028059131`, and post-merge `main` passed Music CI `35028245616` and Platform Contract `35028246120`.
 
-This remains a bounded backend foundation, not a complete usable music application. Metadata/artwork extraction, canonical Recording/Release/Source Item/Playable Asset ingestion, event-driven filesystem change detection, favorites/ratings/recent activity service operations, library/search APIs, production authentication/session integration, Everkeep recovery acceptance, playback, provider integration, offline downloads, recommendations, and user-facing clients remain open.
+This remains a bounded backend foundation, not a complete usable music application. Metadata/artwork extraction, canonical Recording/Release/Source Item/Playable Asset ingestion, event-driven filesystem change detection, user-facing Recently Added integration, library/search/profile-state APIs, production authentication/session integration, Everkeep recovery acceptance, playback, provider integration, offline downloads, recommendations, and user-facing clients remain open.
 
 ## Development service
 
@@ -30,7 +30,7 @@ Implemented development endpoints:
 
 The service opens and migrates its local Development application-state database at startup. `GOREECLOUD_MUSIC_DB` may override the local database path.
 
-The scanner/reconciliation foundation currently exists as an internal storage/library capability; no user-facing library-import or scan HTTP endpoint is claimed by this repository state.
+The scanner/reconciliation, profile-state, and Recently Added foundations currently exist as internal storage/library capabilities; no user-facing library-import, profile-state, Recently Added, or scan HTTP endpoint is claimed by this repository state.
 
 See [`api/openapi.yaml`](api/openapi.yaml) for the current API contract.
 
@@ -52,7 +52,7 @@ The authoritative product-scope and planned-capability record is the Markdown fi
 
 The Music storage contract keeps durable application state separate from original user media. The current Development backend is SQLite, but the engine-neutral Music domain/storage contract remains authoritative over backend-local identity. Original user audio files remain independent from application database state, and reusable authentication/provider secrets are not ordinary application records.
 
-The current source verifies forward schema migration through version 3. Schema v2 materializes per-profile library membership while preserving existing schema-v1 library-owner access. Schema v3 adds durable source-file observations used for scanning/reconciliation without storing original media bytes. Production persistence qualification, backup/restore acceptance, corruption/recovery procedures, and Everkeep acceptance remain open.
+The current source verifies forward schema migration through version 3. Schema v2 materializes per-profile library membership while preserving existing schema-v1 library-owner access. Schema v3 adds durable source-file observations used for scanning/reconciliation without storing original media bytes. Favorites, Ratings, Recently Played, and Recently Added currently use existing application-state entities/records and do not add a later schema version. Production persistence qualification, backup/restore acceptance, corruption/recovery procedures, and Everkeep acceptance remain open.
 
 ## Provider boundary
 

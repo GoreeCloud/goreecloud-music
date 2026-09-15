@@ -2,7 +2,7 @@
 title: "GoreeCloud Music — Repository Change Log"
 document_type: "Repository Change Log"
 status: "Active"
-version: "v1.1"
+version: "v1.2"
 classification: "Internal"
 last_updated: "2026-09-15"
 application: "GoreeCloud Music"
@@ -11,6 +11,18 @@ application: "GoreeCloud Music"
 # GoreeCloud Music — Repository Change Log
 
 This repository changelog records verified source and repository-documentation changes. The canonical GoreeCloud product changelog is `GoreeCloud/Changelogs/Change Log — Music.md`. Planned roadmap items are not completed changes merely because they appear in documentation.
+
+## September 15, 2026 — Authorization-scoped Recently Added foundation
+
+- PR #14 merged as authoritative `main` commit `c20acc1a92ee71ee4173468d97a5980ccf396013`.
+- Exact candidate `8058489efbaafcfd95fbe1b6144a4eb6bc909c6d` passed Music CI `35028058553` and Platform Contract `35028059131`.
+- Post-merge `main` passed Music CI `35028245616` and Platform Contract `35028246120`.
+- Added a bounded `RecentlyAddedForProfile` query over existing canonical `recordings.added_at` application state.
+- Results are newest-first with deterministic recording-ID tie breaking and include recording/library identity, title, artist, and added timestamp.
+- Current library membership is re-evaluated for the requesting profile, so inaccessible or revoked-library recordings are suppressed without deleting underlying recording/library state.
+- Tests cover ordering, cross-library isolation, explicit grants, authorization revocation, malformed profile identifiers, result bounds, race testing, and service build.
+- The initial candidate correctly failed CI because a test treated syntactically valid ID `invalid` as malformed; the test alone was corrected to use a genuinely invalid `/` character and the final exact candidate passed all required gates.
+- This change does not add a schema version or dependency and does not implement canonical media ingestion, metadata/artwork extraction, Home UI/API exposure, production authentication, recovery acceptance, release eligibility, or Stable status.
 
 ## September 15, 2026 — Authorization-scoped Favorites, Ratings, and Recently Played foundation
 
