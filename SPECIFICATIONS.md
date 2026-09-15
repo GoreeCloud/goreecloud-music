@@ -2,13 +2,14 @@
 
 ## Authority and status
 
-This repository is the canonical source repository for **GoreeCloud Music**. The authoritative product scope is maintained in `Project Specification — Music.docx` in GoreeCloud Google Drive. This file is the repository-side engineering summary and must remain consistent with that record.
+This repository is the canonical source repository for **GoreeCloud Music**. The authoritative product scope is maintained in `Project Specification — Music.docx` in GoreeCloud Google Drive. This file is the repository-side engineering summary and must remain consistent with that record and with current cross-project GoreeCloud platform governance.
 
 **Lifecycle:** Development  
 **Current implementation status:** documentation and architecture foundation; no production-accepted Music runtime is established by this file  
 **Capability identity:** GoreeCloud Resonance  
 **Design system requirement:** latest approved Stable Glaze UI; current Stable is **1.4.1**  
-**Required Integral Platform Systems:** GoreeCloud Manager, Privacy Shield, Wardveil Security, Everkeep, Glaze UI, GoreeCloud Mesh, and GoreeCloud Identity
+**Platform Contract requirement:** current Contract **0.3**, evaluating exactly eight Integral Platform Systems  
+**Required Integral Platform Systems:** GoreeCloud Manager, Privacy Shield, Wardveil Security, Everkeep, Glaze UI, GoreeCloud Mesh, GoreeCloud Identity, and GoreeCloud Sync
 
 ## Product direction
 
@@ -30,6 +31,12 @@ The planned first-party `/api/v1/` surface should be organized around stable Mus
 Each user requires independent identity, permissions, library access, history, recommendations, queues, downloads, settings, devices, and private-data boundaries. Shared and family experiences must be explicit and must not silently expose private listening history or grant access to otherwise inaccessible media.
 
 Runtime authorization must be rechecked at sensitive operation boundaries. Offline authorization may use a deliberately bounded local cache where approved, but offline operation must not become an unlimited bypass around revocation, profile separation, or device security.
+
+## Synchronization boundary
+
+GoreeCloud Sync is a required Platform System evaluation for Music. Planned cross-device queues, progress, playlists, downloads, preferences, and other synchronized state must use an explicit authorized dataset and conflict/reconciliation model rather than treating network reachability or shared storage as synchronization acceptance.
+
+No Sync runtime integration or acceptance is established by the current repository baseline. The Platform Contract must remain fail-closed until implementation and evidence exist.
 
 ## Provider boundary
 
