@@ -4,7 +4,7 @@
 
 GoreeCloud Music is in **Active Development** at **Milestone 1 — Native Multi-User Library**. It is not a complete music application or Stable release.
 
-The repository contains verified backend foundations for native domain/storage architecture, SQLite application-state persistence, per-profile library authorization, and source-preserving library-file discovery/reconciliation. These foundations are not yet exposed as a complete user-facing library-import, search, or playback experience.
+The repository contains verified backend foundations for native domain/storage architecture, SQLite application-state persistence, per-profile library authorization, source-preserving library-file discovery/reconciliation, profile-scoped Favorites/Ratings/Recently Played state, and an authorization-scoped Recently Added query. These foundations are not yet exposed as a complete user-facing library-import, profile-state, Recently Added, search, or playback experience.
 
 ## Running the development service
 
@@ -25,7 +25,7 @@ curl http://127.0.0.1:8080/healthz
 curl http://127.0.0.1:8080/api/v1/system/info
 ```
 
-These endpoints confirm Development process/storage health and build identity. They do not provide a public music-library scan/import API, search API, or playback API.
+These endpoints confirm Development process/storage health and build identity. They do not provide a public music-library scan/import API, profile-state API, Recently Added API, search API, or playback API.
 
 ## Implemented internal library foundations
 
@@ -40,9 +40,12 @@ Current merged Development source includes:
 - durable library-file observations;
 - Added, Updated, Unchanged, Missing, and Restored reconciliation;
 - missing-file tombstones;
-- permission-gated file-state listing and reconciliation.
+- permission-gated file-state listing and reconciliation;
+- profile-owned Favorites, Ratings, and Recently Played application-state operations for authorized recordings;
+- current-membership filtering that suppresses Favorite/Recently Played state after library access is revoked;
+- authorization-scoped Recently Added retrieval using canonical recording `added_at` state, with newest-first deterministic ordering and revoked-library suppression.
 
-These are backend/internal capabilities. Their presence does not mean the application currently has a finished library browser, import workflow, metadata UI, or playback surface.
+These are backend/internal capabilities. Their presence does not mean the application currently has a finished library browser, import workflow, metadata UI, Recently Added UI, profile-state UI, or playback surface.
 
 ## Not available yet
 
@@ -51,8 +54,8 @@ The following remain unimplemented or incomplete for user-facing use:
 - metadata/tag and artwork ingestion;
 - canonical Recording/Release/Source Item/Playable Asset ingestion from scanned files;
 - event-driven filesystem watching;
-- complete library/search APIs and UI;
-- favorites, ratings, and recent-activity service operations;
+- complete library/search/profile-state APIs and UI;
+- Home/user-facing Recently Added integration;
 - production authentication/session integration;
 - music streaming, transcoding, and playback sessions;
 - playlists and offline downloads as complete product features;
