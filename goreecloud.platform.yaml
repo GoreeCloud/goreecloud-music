@@ -1,0 +1,42 @@
+schema_version: 1
+product:
+  name: GoreeCloud Music
+  repository: GoreeCloud/goreecloud-music
+  version: 0.1.0-dev.1
+  lifecycle: active-development
+  milestone: 0-architecture-foundation
+native_qualification:
+  repository_origin: goreecloud-created
+  whole_product_upstream_dependency: false
+platform_systems:
+  goreecloud_identity:
+    state: planned
+    evidence: authorization contract only; no runtime integration claim
+  privacy_shield:
+    state: planned
+    evidence: privacy boundaries documented; no runtime integration claim
+  wardveil_security:
+    state: planned
+    evidence: security requirements documented; no runtime integration claim
+  everkeep:
+    state: planned
+    evidence: recovery requirements documented; no runtime integration claim
+  glaze_ui:
+    state: planned
+    evidence: current Milestone 0 service foundation is headless; user-facing clients not implemented
+  goreecloud_mesh:
+    state: planned
+    evidence: coordination integration not implemented
+  goreecloud_manager:
+    state: planned
+    evidence: observability contract planned; runtime integration not implemented
+application_integrations:
+  goreecloud_search: planned
+  goreecloud_notify: planned
+  goreecloud_sync: planned
+provider_integrations:
+  youtube:
+    state: proposed-approval-required
+    enabled: false
+    evidence: no provider adapter implementation in Milestone 0
+stable_eligible: false

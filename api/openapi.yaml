@@ -1,0 +1,42 @@
+openapi: 3.1.0
+info:
+  title: GoreeCloud Music API
+  version: 0.1.0-dev.1
+  description: >-
+    Milestone 0 contract for the native GoreeCloud Music service. Only paths marked
+    x-goreecloud-implementation: implemented are currently backed by code.
+servers:
+  - url: http://127.0.0.1:8080
+paths:
+  /healthz:
+    get:
+      x-goreecloud-implementation: implemented
+      summary: Process health check
+      responses:
+        '200':
+          description: Healthy process
+  /api/v1/system/info:
+    get:
+      x-goreecloud-implementation: implemented
+      summary: Development build identity
+      responses:
+        '200':
+          description: Current development build identity
+x-goreecloud-planned-domains:
+  - libraries
+  - recordings
+  - releases
+  - sources
+  - source-items
+  - search
+  - playback-sessions
+  - queues
+  - playlists
+  - downloads
+  - recommendations
+  - radio
+  - lyrics
+  - credits
+  - devices
+  - history
+  - sharing
