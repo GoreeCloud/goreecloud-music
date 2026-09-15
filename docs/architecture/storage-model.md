@@ -2,15 +2,15 @@
 
 ## Status
 
-The accepted Milestone 0 foundation remains an engine-neutral durable application-state contract. Draft Milestone 1 PR #7 now adds a concrete SQLite Development backend while preserving that logical contract and its replaceability boundary.
+The accepted Milestone 0 foundation remains the engine-neutral durable application-state contract. Milestone 1 PR #7 merged a concrete SQLite Development backend to `main` as `564ac6a792070996dc39b103232c39b4fca95074` while preserving that logical contract and its replaceability boundary.
 
-This document distinguishes the accepted logical storage authority from the current Draft backend candidate. A backend implementation does not become production-authoritative merely because it satisfies the logical schema or passes repository CI.
+SQLite is now the implemented Development application-state backend in source. It is not production-authoritative merely because it satisfies the logical schema or passes repository validation. Production persistence qualification, backup/restore acceptance, corruption/recovery evidence, and release acceptance remain separate gates.
 
 ## Purpose
 
-GoreeCloud Music separates durable application state from original user media. Milestone 0 established the logical state model and forward-only migration contract before a database engine was selected. Milestone 1 may add a concrete backend only when it preserves the same ownership, privacy, portability, recovery, and migration boundaries.
+GoreeCloud Music separates durable application state from original user media. Milestone 0 established the logical state model and forward-only migration contract before a database engine was selected. Milestone 1 may implement a concrete backend only when it preserves the same ownership, privacy, portability, recovery, and migration boundaries.
 
-The engine-neutral executable contract lives in `internal/storage`. The current Draft SQLite implementation lives in `internal/storage/sqlite`.
+The engine-neutral executable contract lives in `internal/storage`. The current merged SQLite Development implementation lives in `internal/storage/sqlite`.
 
 ## Storage boundary
 
@@ -20,9 +20,9 @@ Original media remains in GoreeCloud-controlled library storage and is reference
 
 Reusable provider credentials, private keys, authentication secrets, and equivalent sensitive credentials remain outside this storage model. A production implementation must use the applicable secret or identity authority rather than embedding reusable secrets in ordinary application records.
 
-## Current logical schema — version 2 candidate
+## Current logical schema — version 2
 
-Draft PR #7 advances `internal/storage.CurrentSchema()` from schema version `1` to `2` by adding explicit per-profile library membership state. The candidate contains these engine-neutral entities:
+Merged PR #7 advanced `internal/storage.CurrentSchema()` from schema version `1` to `2` by adding explicit per-profile library membership state. The current engine-neutral schema contains these entities:
 
 | Entity | Ownership boundary | Purpose |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ The migration catalog is forward-only and versioned independently from the Goree
 
 The accepted initial migration is `0001-core-application-state`, moving an uninitialized backend from schema version `0` to `1`.
 
-Draft PR #7 adds `0002-library-memberships`, moving schema version `1` to `2` and creating the explicit per-profile library authorization relation. The SQLite implementation performs the table creation and owner-membership backfill in the same transaction, preserving existing schema-v1 library owners before the stored schema version advances. A regression test constructs real schema-v1 SQLite state, upgrades it to v2, and verifies that owner authorization and library visibility survive the migration.
+Merged PR #7 added `0002-library-memberships`, moving schema version `1` to `2` and creating the explicit per-profile library authorization relation. The SQLite implementation performs the table creation and owner-membership backfill in the same transaction, preserving existing schema-v1 library owners before the stored schema version advances. A regression test constructs real schema-v1 SQLite state, upgrades it to v2, and verifies that owner authorization and library visibility survive the migration.
 
 The catalog validator fails closed when migration identifiers are missing or duplicated, versions are non-contiguous or non-forward, changes are empty or unsupported, a change references an unknown entity, an entity is created more than once, the current schema is not fully represented, or the catalog does not end at the declared current schema version.
 
@@ -64,13 +64,13 @@ A concrete backend implements the minimal `storage.Backend` boundary:
 
 The shared migration runner verifies the final backend version and fails when the requested target is not reached. A backend must not silently coerce unsupported schema, skip unknown migrations, or mark a failed migration as applied.
 
-## Milestone 1 SQLite Development candidate
+## Milestone 1 SQLite Development foundation
 
-Draft PR #7 selects SQLite as the concrete GoreeCloud Music application-state backend for the current Development candidate, using Go `database/sql` with `modernc.org/sqlite` v1.58.0. The dependency graph is explicitly pinned, including the SQLite module's required matching `modernc.org/libc` v1.75.6 dependency.
+The merged Development source uses SQLite as the concrete GoreeCloud Music application-state backend through Go `database/sql` with `modernc.org/sqlite` v1.58.0. The dependency graph is explicitly pinned, including the SQLite module's required matching `modernc.org/libc` v1.75.6 dependency.
 
 The selection is bounded to application-state persistence. It does not make SQLite a permanent GoreeCloud identity or prevent later migration when verified requirements justify another backend.
 
-The candidate configures:
+The implementation configures:
 
 - foreign-key enforcement;
 - WAL journaling;
@@ -82,11 +82,13 @@ The candidate configures:
 - STRICT tables for the current physical schema;
 - a local Development database path configurable through `GOREECLOUD_MUSIC_DB`.
 
-The candidate also implements profile and library persistence, atomic owner-membership creation, explicit read/edit/owner membership checks, absolute library-root validation, persistent membership state across reopen, and storage-aware health reporting.
+The implementation also provides profile and library persistence, atomic owner-membership creation, explicit read/edit/owner membership checks, absolute library-root validation, persistent membership state across reopen, and storage-aware health reporting.
 
 Owner authority fails closed: an owner cannot be silently downgraded and owner permission cannot be granted to another profile without a separately designed ownership-transfer operation.
 
-## Why SQLite is appropriate for this bounded candidate
+PR #7's exact merge candidate `7113754cd130bbdb6591de757eb51e31dd8541e1` passed Music CI `35016356483` and Platform Contract `35016357625`. After merge, authoritative `main` commit `564ac6a792070996dc39b103232c39b4fca95074` passed post-merge Music CI `35017128457` and Platform Contract `35017129147`.
+
+## Why SQLite is appropriate for this bounded Development foundation
 
 The current self-hosted Music service is a single application authority rather than a distributed multi-writer database cluster. SQLite provides transactional relational state, explicit schema/migrations, indexes and constraints, a small operational footprint, file-level portability, and simple self-hosted deployment while keeping original media independent from the database.
 
@@ -94,7 +96,7 @@ This choice remains subject to workload, concurrency, recovery, corruption, obse
 
 ## Everkeep and recovery boundary
 
-Selecting and validating a Development backend is not backup or recovery acceptance. Before release, the SQLite application-state database and required schema/migration metadata must become part of an Everkeep-aligned backup and restore plan with tested restoration evidence.
+Selecting, merging, and validating a Development backend is not backup or recovery acceptance. Before release, the SQLite application-state database and required schema/migration metadata must become part of an Everkeep-aligned backup and restore plan with tested restoration evidence.
 
 Original media remains a separate protected data scope. A successful application-state restore must not be represented as a complete media-library restore unless the referenced media scope was also recovered and verified.
 
@@ -108,16 +110,15 @@ GoreeCloud Sync remains a separately governed application/service capability rat
 
 ## Acceptance boundary
 
-The current Draft candidate establishes only a verified repository-level persistence and per-profile library-authorization foundation when its exact-head CI and Platform Contract checks are green. It does **not** establish:
+The merged Development source establishes a repository-level persistence and per-profile library-authorization foundation with post-merge CI and Platform Contract validation. It does **not** establish:
 
-- authoritative merged Milestone 1 source until PR #7 is reviewed and merged;
 - incremental library scanning or filesystem-change detection;
 - metadata extraction or artwork handling;
 - recording/release ingestion into the native library;
 - favorites, ratings, recently-added, or recently-played service operations;
 - library/search HTTP APIs;
 - production authentication/session handling;
-- production backup/restore acceptance;
+- production persistence qualification or backup/restore acceptance;
 - production deployment, release eligibility, overall Platform conformance, or Stable status;
 - Milestone 1 completion.
 
