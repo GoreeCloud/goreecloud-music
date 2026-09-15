@@ -2,7 +2,7 @@
 title: "GoreeCloud Music — Repository Change Log"
 document_type: "Repository Change Log"
 status: "Active"
-version: "v1.3"
+version: "v1.4"
 classification: "Internal"
 last_updated: "2026-09-15"
 application: "GoreeCloud Music"
@@ -11,6 +11,29 @@ application: "GoreeCloud Music"
 # GoreeCloud Music — Repository Change Log
 
 This repository changelog records verified source and repository-documentation changes. The canonical GoreeCloud product changelog is `GoreeCloud/Changelogs/Change Log — Music.md`. Planned roadmap items are not completed changes merely because they appear in documentation.
+
+## September 15, 2026 — Bounded MP3 and FLAC media format probing
+
+- PR #19 merged as authoritative `main` commit `5e59466da23e5800f13f19e377a9e852631276ef`.
+- Exact candidate `d3eb0dcf31dce6b1802f0a1d979d628e15ee7a7f` passed Music CI `35034688612` and Platform Contract `35034689104`.
+- Post-merge `main` passed Music CI `35034883077` and Platform Contract `35034883624`.
+- Added first-party, dependency-free format probing for already-materialized GoreeCloud Server playable assets.
+- MP3 probing requires actual MPEG Layer III frame evidence, optionally after a validated ID3v2.3/v2.4 prefix; tag-only and non-Layer-III inputs fail closed.
+- FLAC probing requires the native `fLaC` signature and valid first STREAMINFO block shape.
+- `ProbeLibraryFileFormat` re-evaluates edit/owner authorization, scanner/source state, source-item/asset/path/size binding, rooted source safety, and scanner size/mtime freshness before persisting only `codec` and `container`.
+- Failed probing leaves prior format state untouched and unchanged retries are idempotent.
+- Duration, bitrate, sample rate, channels, bit depth, ReplayGain, media hashes/integrity, broader formats, playback/transcoding acceptance, automatic identity matching, APIs/UI, recovery qualification, release eligibility, and Stable status remain pending.
+
+## September 15, 2026 — Explicit-identity library ingestion foundation
+
+- PR #18 merged as authoritative `main` commit `f365047f33f732afb1e274cd1d4b4b401271c32a`.
+- Exact candidate `b46d2628a7fd86db79dc2a0be17945908166a8fd` passed Music CI `35032631291` and Platform Contract `35032632700`.
+- Post-merge `main` passed Music CI `35032841324` and Platform Contract `35032841752`.
+- Added one atomic transaction that materializes a current, authorized scanner file into existing Recording, Release, GoreeCloud Server Source Item, and Playable Asset application state only when the caller supplies validated canonical Recording and Release IDs.
+- Source Item and Playable Asset IDs are deterministically derived from the owning library and durable scanner `file_id`; exact retries are idempotent, while conflicting canonical IDs, source bindings, or media paths are rejected.
+- The transaction re-evaluates edit/owner authorization, requires non-missing current scanner metadata, reopens the source through the existing rooted non-symlink file boundary, and verifies size/mtime again immediately before commit so stale source facts roll back the whole transaction.
+- Original media remains unchanged and title/artist similarity does not establish identity equivalence.
+- Automatic Recording/Release matching, duplicate-equivalence policy, broader/background ingestion, codec/container/duration/integrity enrichment, APIs/UI, recovery acceptance, production qualification, release eligibility, and Stable status remain pending.
 
 ## September 15, 2026 — Bounded embedded metadata extraction foundation
 
