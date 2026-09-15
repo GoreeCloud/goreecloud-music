@@ -82,7 +82,7 @@ PR #14 merged to `main` as `c20acc1a92ee71ee4173468d97a5980ccf396013`. Exact can
 
 ### Milestone 1 embedded metadata foundation
 
-Merged PR #16 adds a bounded read-only metadata layer between scanner observations and future canonical media ingestion:
+Merged PR #16 adds a bounded read-only metadata layer between scanner observations and canonical media materialization:
 
 - Logical schema version 4 with `library_file_metadata` keyed to durable scanner `file_id` identity.
 - MP3 ID3v2.3/v2.4 textual metadata extraction for title, artist, album, album artist, genre, date/year, track number, and disc number.
@@ -95,15 +95,44 @@ Merged PR #16 adds a bounded read-only metadata layer between scanner observatio
 
 PR #16 exact candidate `fc9613d94493e2d5c355f3aba7b6bd2a24a2d334` passed Music CI `35030658032` and Platform Contract `35030658657`. It merged as authoritative `main` commit `bc90686a18338afef650b73357f454d1be541afb`, which passed post-merge Music CI `35030857299` and Platform Contract `35030858110`.
 
+### Milestone 1 explicit-identity canonical materialization foundation
+
+Merged PR #18 adds a bounded ingestion boundary from a current scanner/metadata observation into existing canonical application-state entities:
+
+- Caller-supplied validated Recording and Release IDs; no automatic equivalence matching from tag similarity.
+- Deterministic GoreeCloud Server Source Item and Playable Asset IDs derived from library identity plus durable scanner `file_id`.
+- Library edit/owner authorization re-evaluated inside the transaction.
+- Current non-missing scanner state plus current extracted metadata required before materialization.
+- Rooted non-symlink source reopening and scanner size/mtime verification before durable commit.
+- Atomic Release, Recording, Source Item, and Playable Asset creation/reuse.
+- Idempotent exact retries and fail-closed rejection of conflicting canonical IDs, source bindings, or media paths.
+- Original media remains unchanged.
+
+PR #18 exact candidate `b46d2628a7fd86db79dc2a0be17945908166a8fd` passed Music CI `35032631291` and Platform Contract `35032632700`. It merged as `f365047f33f732afb1e274cd1d4b4b401271c32a`; post-merge Music CI `35032841324` and Platform Contract `35032841752` passed.
+
+### Milestone 1 bounded media format probing foundation
+
+Merged PR #19 adds source-verified codec/container facts for already-materialized GoreeCloud Server playable assets:
+
+- First-party probing with no new dependency.
+- `.mp3` requires actual MPEG Layer III frame evidence, optionally after a validated ID3v2.3/v2.4 prefix; tag-only or non-Layer-III inputs fail closed.
+- `.flac` requires the native `fLaC` signature and valid first STREAMINFO block shape.
+- `ProbeLibraryFileFormat` re-evaluates library edit/owner permission, current scanner state, exact source-item/asset/path/size binding, rooted source safety, and size/mtime freshness.
+- Only `codec` and `container` are persisted on the existing playable asset.
+- Unchanged retries are idempotent, and failed probing leaves prior format state untouched.
+- Duration, bitrate, sample rate, channels, bit depth, ReplayGain, hashes/integrity, broader formats, playback/transcoding acceptance, and automatic identity matching remain separate work.
+
+PR #19 exact candidate `d3eb0dcf31dce6b1802f0a1d979d628e15ee7a7f` passed Music CI `35034688612` and Platform Contract `35034689104`. It merged as current authoritative `main` `5e59466da23e5800f13f19e377a9e852631276ef`; post-merge Music CI `35034883077` and Platform Contract `35034883624` passed.
+
 ## Partial / foundation only
 
-- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, bounded MP3/FLAC embedded metadata, profile-scoped Favorites/Ratings/Recently Played, and authorization-scoped Recently Added foundations exist. Approved sidecar metadata, artwork, additional embedded-tag/container formats, canonical Recording/Release/Source Item/Playable Asset ingestion, filesystem event watchers, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
+- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, bounded MP3/FLAC embedded metadata, explicit-identity canonical materialization, bounded MP3/FLAC codec-container probing, profile-scoped Favorites/Ratings/Recently Played, and authorization-scoped Recently Added foundations exist. Approved sidecar metadata, artwork, additional embedded-tag/container formats, automatic identity matching/equivalence policy, broader/background ingestion, richer media probing, filesystem event watchers, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
 - Playback routing: decision core exists; actual stream acquisition, codec negotiation, transcoding, and sessions do not.
 - Provider architecture: contract and registry exist; no real provider adapters exist.
 - Authorization: application and durable library-membership foundations exist; production GoreeCloud Identity/Privacy Shield/Wardveil runtime integration does not.
 - API: service shell and operational endpoints exist; product library/search/playback/profile-state APIs are not implemented.
 - Queue: domain/schema foundations exist; queue service operations, recovery, and multi-device continuity are not implemented.
-- Persistence: the SQLite Development backend, schema-v4 scanner/metadata state, profile-state operations, and Recently Added query are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
+- Persistence: the SQLite Development backend, schema-v4 scanner/metadata state, explicit-identity materialization, bounded format facts, profile-state operations, and Recently Added query are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
 
 ## Planned
 
