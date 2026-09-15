@@ -116,6 +116,9 @@ func (b *Backend) ProbeLibraryFileFormat(ctx context.Context, profileID domain.P
 	if rows != 1 {
 		return PlayableAssetFormat{}, fmt.Errorf("playable asset changed during format probing")
 	}
+	if err := verifyObservedLibraryFileSnapshot(source, sizeBytes, modifiedNS); err != nil {
+		return PlayableAssetFormat{}, err
+	}
 	if err := tx.Commit(); err != nil {
 		return PlayableAssetFormat{}, fmt.Errorf("commit playable asset format: %w", err)
 	}
