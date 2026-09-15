@@ -2,6 +2,7 @@ package sqlitestore
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,6 +11,7 @@ import (
 	"github.com/GoreeCloud/goreecloud-music/internal/domain"
 	"github.com/GoreeCloud/goreecloud-music/internal/libraryscan"
 	"github.com/GoreeCloud/goreecloud-music/internal/storage"
+	sqlite "modernc.org/sqlite"
 )
 
 func TestScanLibraryReconcilesFilesWithoutMutatingSources(t *testing.T) {
@@ -156,11 +158,12 @@ func TestSchemaV2MigratesToLibraryFilesWithoutChangingAuthorization(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	connector, err := sqliteConnectorForTest(dsn)
+	connector, err := sqlite.NewConnector(dsn)
 	if err != nil {
 		t.Fatal(err)
 	}
-	legacy := &Backend{db: connector}
+	db := sql.OpenDB(connector)
+	legacy := &Backend{db: db}
 	if err := storage.Migrate(ctx, legacy, 2); err != nil {
 		t.Fatalf("migrate to v2: %v", err)
 	}
