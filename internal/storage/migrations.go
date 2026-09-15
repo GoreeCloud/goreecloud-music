@@ -52,9 +52,17 @@ var migrations = []Migration{
 	{
 		ID:   "0002-library-memberships",
 		From: 1,
-		To:   CurrentVersion,
+		To:   2,
 		Changes: []Change{
 			{Kind: ChangeCreateEntity, Entity: "library_memberships", Detail: "per-profile library authorization with explicit roles; concrete backends must preserve existing library-owner access when materializing membership state"},
+		},
+	},
+	{
+		ID:   "0003-library-files",
+		From: 2,
+		To:   CurrentVersion,
+		Changes: []Change{
+			{Kind: ChangeCreateEntity, Entity: "library_files", Detail: "per-library filesystem observations for source-preserving incremental scan and missing-file reconciliation"},
 		},
 	},
 }
