@@ -80,15 +80,30 @@ Merged PR #14 adds a bounded, authorization-scoped Recently Added library view:
 
 PR #14 merged to `main` as `c20acc1a92ee71ee4173468d97a5980ccf396013`. Exact candidate `8058489efbaafcfd95fbe1b6144a4eb6bc909c6d` passed CI `35028058553` and Platform Contract `35028059131`; post-merge `main` passed CI `35028245616` and Platform Contract `35028246120`.
 
+### Milestone 1 embedded metadata extraction foundation
+
+Merged PR #16 adds bounded, read-only embedded metadata extraction tied to exact scanner observations:
+
+- Logical schema version 4 with durable `library_file_metadata` rows keyed by scanner `file_id`.
+- MP3 ID3v2.3/v2.4 textual metadata extraction and FLAC Vorbis Comment extraction for title, artist, album, album artist, genre, date/year text, track-number text, and disc-number text.
+- Library edit authorization for extraction/persistence and library read authorization for retrieval.
+- Metadata freshness bound to scanner size/mtime observations, verified before parsing and again immediately before persistence.
+- `Current` state derived from the latest scanner observation and missing-file tombstone state.
+- Traversal-resistant rooted source access through Go `os.Root`, with the stricter Music no-symlink policy preserved.
+- Bounded parser limits and malformed-input rejection without mutating source media or creating canonical Recording/Release identity.
+- Schema-v3-to-v4 migration regression coverage that preserves existing library/file state.
+
+PR #16 exact candidate `fc9613d94493e2d5c355f3aba7b6bd2a24a2d334` passed CI `35030658032` and Platform Contract `35030658657`. It merged as signed authoritative `main` commit `bc90686a18338afef650b73357f454d1be541afb`, which passed post-merge CI `35030857299` and Platform Contract `35030858110`.
+
 ## Partial / foundation only
 
-- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, profile-scoped Favorites/Ratings/Recently Played, and authorization-scoped Recently Added foundations exist, but metadata/artwork extraction, canonical Recording/Release/Source Item/Playable Asset ingestion from scanned files, filesystem event watchers, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
+- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, profile-scoped Favorites/Ratings/Recently Played, authorization-scoped Recently Added, and bounded embedded MP3/FLAC metadata foundations exist, but sidecar metadata, artwork, additional container/tag formats, canonical Recording/Release/Source Item/Playable Asset ingestion from scanned files, filesystem event watchers, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
 - Playback routing: decision core exists; actual stream acquisition, codec negotiation, transcoding, and sessions do not.
 - Provider architecture: contract and registry exist; no real provider adapters exist.
 - Authorization: application and durable library-membership foundations exist; production GoreeCloud Identity/Privacy Shield/Wardveil runtime integration does not.
-- API: service shell and operational endpoints exist; product library/search/playback/profile-state APIs are not implemented.
+- API: service shell and operational endpoints exist; product library/search/playback/profile-state/metadata APIs are not implemented.
 - Queue: domain/schema foundations exist; queue service operations, recovery, and multi-device continuity are not implemented.
-- Persistence: the SQLite Development backend, schema-v3 scan state, profile-state operations, and Recently Added query are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
+- Persistence: the SQLite Development backend, schema-v4 scan/metadata state, profile-state operations, and Recently Added query are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
 
 ## Planned
 
