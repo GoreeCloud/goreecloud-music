@@ -44,7 +44,7 @@ The database continues to store metadata and references only. Original media byt
 
 ## Freshness contract
 
-Metadata extraction is permitted only when the currently opened regular file still matches the scanner observation's byte size and nanosecond modification timestamp. If the source has changed, extraction fails with a rescan-required condition instead of binding tags to stale file facts.
+Metadata extraction is permitted only when the currently opened regular file matches the scanner observation's byte size and nanosecond modification timestamp both before parsing and again after parsing immediately before persistence. If the source has changed at either boundary, extraction fails with a rescan-required condition instead of binding tags to stale file facts.
 
 A stored metadata row is considered current only when its extraction snapshot still matches the latest `library_files` observation and that observation is not tombstoned as missing.
 
@@ -56,9 +56,10 @@ Before extraction:
 
 - the configured library root must still be an absolute, non-symlink directory;
 - the stored relative path must remain inside that root;
-- every current path component is checked with `Lstat` and symbolic-link components are rejected;
-- the final path must open as a regular file;
-- scanner size/mtime facts are verified on the opened file descriptor.
+- actual source access is rooted with Go `os.Root`, so path traversal and symlink races cannot redirect the open outside the configured library root;
+- every current path component is checked with rooted `Lstat` and symbolic-link components are rejected under the stricter Music no-symlink policy;
+- the final rooted path must open as a regular file;
+- scanner size/mtime facts are verified on the opened file descriptor before and after metadata parsing.
 
 The extractor performs reads only and never rewrites tags, artwork, media payloads, filenames, or directory structure.
 
