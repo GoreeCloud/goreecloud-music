@@ -47,7 +47,7 @@ PR #14 implemented `RecentlyAddedForProfile` over existing canonical `recordings
 
 ### Embedded metadata extraction and persistence
 
-PR #16 advanced the Development schema to version 4 and established a bounded metadata layer between scanner observations and future canonical media ingestion:
+PR #16 advanced the Development schema to version 4 and established a bounded metadata layer between scanner observations and canonical media materialization:
 
 - `library_file_metadata` keyed to scanner `file_id`;
 - read-only MP3 ID3v2.3/v2.4 text extraction;
@@ -61,19 +61,51 @@ PR #16 advanced the Development schema to version 4 and established a bounded me
 
 PR #16 exact candidate `fc9613d94493e2d5c355f3aba7b6bd2a24a2d334` passed Music CI `35030658032` and Platform Contract `35030658657`. It merged as `bc90686a18338afef650b73357f454d1be541afb`; post-merge Music CI `35030857299` and Platform Contract `35030858110` passed.
 
+### Explicit-identity canonical materialization
+
+PR #18 established a bounded transaction from current scanner/metadata state into existing canonical Recording, Release, GoreeCloud Server Source Item, and Playable Asset entities:
+
+- caller-supplied validated Recording and Release IDs are mandatory;
+- source-item and playable-asset IDs are deterministic from library identity plus durable scanner `file_id`;
+- current edit/owner authorization is re-evaluated in the transaction;
+- current non-missing scanner state and current extracted metadata are required;
+- the source is reopened through the rooted non-symlink boundary and size/mtime is revalidated before commit;
+- exact retries are idempotent;
+- conflicting canonical IDs, source bindings, or media paths fail closed;
+- original media is not modified;
+- title/artist similarity does not establish identity equivalence.
+
+PR #18 exact candidate `b46d2628a7fd86db79dc2a0be17945908166a8fd` passed Music CI `35032631291` and Platform Contract `35032632700`. It merged as `f365047f33f732afb1e274cd1d4b4b401271c32a`; post-merge Music CI `35032841324` and Platform Contract `35032841752` passed.
+
+### Bounded MP3 and FLAC media format probing
+
+PR #19 established source-verified codec/container probing for already-materialized GoreeCloud Server playable assets:
+
+- no new third-party dependency;
+- `.mp3` requires actual MPEG Layer III frame evidence, optionally following a validated ID3v2.3/v2.4 prefix;
+- `.flac` requires the native `fLaC` signature and valid first STREAMINFO block shape;
+- edit/owner authorization, scanner state, source-item/asset/path/size binding, rooted source access, and scanner size/mtime freshness are revalidated;
+- only `codec` and `container` are persisted;
+- unchanged retries are idempotent and failed probing leaves prior format state untouched;
+- duration, bitrate, sample rate, channels, bit depth, ReplayGain, media hashes/integrity, broader formats, playback/transcoding acceptance, and automatic identity matching remain outside this slice.
+
+PR #19 exact candidate `d3eb0dcf31dce6b1802f0a1d979d628e15ee7a7f` passed Music CI `35034688612` and Platform Contract `35034689104`. It merged as current authoritative `main` `5e59466da23e5800f13f19e377a9e852631276ef`; post-merge Music CI `35034883077` and Platform Contract `35034883624` passed.
+
 ## Storage and media boundary
 
-Original music files remain in GoreeCloud-controlled library storage. SQLite stores application state, references/observations, and normalized metadata facts only; it does not embed original media bytes. Media-file loss and database-state loss remain separate recovery domains. Reusable authentication credentials and provider secrets remain outside ordinary Music application-state records.
+Original music files remain in GoreeCloud-controlled library storage. SQLite stores application state, references/observations, normalized metadata facts, and bounded format facts only; it does not embed original media bytes. Media-file loss and database-state loss remain separate recovery domains. Reusable authentication credentials and provider secrets remain outside ordinary Music application-state records.
 
 The deterministic library-file identifier used by the scanner is a reconciliation identity derived from library identity and relative path. It is not a content hash and does not establish canonical Recording identity. `library_file_metadata` is similarly a bounded extraction record tied to the scanner observation; tag facts do not silently become canonical Recording/Release identity.
 
-Favorites, Ratings, Recently Played, and Recently Added use existing application-state records/entities; their implementation does not itself qualify canonical media ingestion or production persistence.
+PR #18 materializes canonical state only under explicit caller-supplied Recording/Release identity. PR #19 verifies only bounded codec/container facts for an already-materialized playable asset; it does not establish exact recording equivalence, content integrity, playback fitness, or broader format support.
+
+Favorites, Ratings, Recently Played, and Recently Added use existing application-state records/entities; their implementation does not itself qualify production persistence or broader product APIs.
 
 ## Authorization boundary
 
 Durable library membership supplies application authorization facts but does not replace higher-level GoreeCloud authority. API/service operations must continue to validate the requesting profile, operation, purpose, applicable Privacy Shield authorization, Wardveil requirements, and future GoreeCloud Identity/session authority.
 
-Queue persistence, profile state, Recently Added results, previously observed file state, or extracted metadata do not grant perpetual access. Authorization must be rechecked at the operation/playback/retrieval boundary where required.
+Queue persistence, profile state, Recently Added results, previously observed file state, extracted metadata, canonical materialization, or stored format facts do not grant perpetual access. Authorization must be rechecked at the operation/playback/retrieval boundary where required.
 
 ## Current status boundary
 
@@ -82,8 +114,10 @@ The verified foundations do **not** establish:
 - approved sidecar metadata extraction;
 - embedded metadata support beyond the bounded MP3 ID3v2.3/v2.4 and FLAC Vorbis Comment subset;
 - artwork discovery/processing;
-- canonical Recording, Release, Source Item, or Playable Asset ingestion from scanned files;
-- codec/container probing beyond filename-extension discovery;
+- automatic Recording/Release matching or duplicate-equivalence policy;
+- broader/background canonical ingestion;
+- media probing beyond the bounded MP3/FLAC codec-container facts currently verified;
+- duration, bitrate, sample rate, channels, bit depth, ReplayGain, or media hashes/integrity;
 - event-driven filesystem watchers/change notifications;
 - Home/user-facing Recently Added integration;
 - library/search/profile-state product APIs;
@@ -95,4 +129,4 @@ The verified foundations do **not** establish:
 - current-Stable Glaze UI acceptance;
 - release eligibility or Stable qualification.
 
-Those remain later Milestone 1 or subsequent milestone obligations and must not be inferred from the persistence/scanner/metadata/profile-state/Recently Added foundations.
+Those remain later Milestone 1 or subsequent milestone obligations and must not be inferred from the persistence/scanner/metadata/materialization/format/profile-state/Recently Added foundations.
