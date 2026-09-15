@@ -1,0 +1,52 @@
+name: Validate GoreeCloud Music foundation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  governance-foundation:
+    runs-on: ubuntu-latest
+    env:
+      MUSIC_SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ env.MUSIC_SOURCE_REVISION }}
+          persist-credentials: false
+      - name: Verify exact source revision
+        run: test "$(git rev-parse HEAD)" = "$MUSIC_SOURCE_REVISION"
+      - name: Validate mandatory repository controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            README.md SPECIFICATIONS.md FEATURES.md FEATURE-ROADMAP.md BENEFITS.md
+            COMPETITIVE-OBJECTIVES.md BRANDING.md USER-MANUAL.md 'PRIVACY POLICY.md'
+            NOTES.md SECURITY.md .gitignore .editorconfig goreecloud.platform.yaml
+          )
+          for path in "${required[@]}"; do
+            test -s "$path" || { echo "Missing or empty required control: $path" >&2; exit 1; }
+          done
+      - name: Validate truthful current authority declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "schema_version: '0.3'" goreecloud.platform.yaml
+          grep -q "platform_contract: '0.3'" goreecloud.platform.yaml
+          grep -q "lifecycle: development" goreecloud.platform.yaml
+          grep -q "status: nonconformant" goreecloud.platform.yaml
+          grep -q "glaze_ui_required: '1.4.1'" goreecloud.platform.yaml
+          grep -q "^  sync:" goreecloud.platform.yaml
+
+  platform-contract:
+    name: Validate exact GoreeCloud Platform Contract
+    uses: GoreeCloud/GoreeCloud/.github/workflows/reusable-platform-manifest.yml@908701c6795ffcd608bd3d8a1e787395a04f1d62
+    with:
+      manifest-path: goreecloud.platform.yaml
