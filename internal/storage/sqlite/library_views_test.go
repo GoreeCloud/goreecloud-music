@@ -125,7 +125,7 @@ func TestRecentlyAddedForProfileValidationAndLimit(t *testing.T) {
 	if _, err := backend.RecentlyAddedForProfile(ctx, profile, maxProfileStateResults+1); err == nil {
 		t.Fatal("RecentlyAddedForProfile oversized limit expected error")
 	}
-	if _, err := backend.RecentlyAddedForProfile(ctx, domain.ProfileID("invalid"), 1); err == nil {
+	if _, err := backend.RecentlyAddedForProfile(ctx, domain.ProfileID("profile/invalid"), 1); err == nil {
 		t.Fatal("RecentlyAddedForProfile invalid profile expected error")
 	}
 }
