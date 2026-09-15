@@ -9,7 +9,7 @@ func TestProbeFormatMP3WithAndWithoutID3(t *testing.T) {
 	frames := testMP3Frames()
 	withID3 := append([]byte{'I', 'D', '3', 3, 0, 0, 0, 0, 0, 0}, frames...)
 	for name, source := range map[string][]byte{
-		"with-id3": withID3,
+		"with-id3":   withID3,
 		"raw-frames": frames,
 	} {
 		t.Run(name, func(t *testing.T) {
