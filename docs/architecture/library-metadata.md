@@ -2,7 +2,7 @@
 
 **Lifecycle:** Milestone 1 Development architecture  
 **Scope:** Read-only embedded tag extraction and durable per-file metadata state  
-**Implementation status:** Candidate until merged to `main` and verified by required checks
+**Implementation status:** Merged and post-merge verified Development foundation — PR #16 / `main` `bc90686a18338afef650b73357f454d1be541afb`
 
 ## Purpose
 
@@ -74,6 +74,14 @@ The extractor performs reads only and never rewrites tags, artwork, media payloa
 The extractor uses bounded tag/block sizes and rejects malformed sizes, malformed UTF encodings, invalid FLAC signatures, excessive comment counts, and unsupported containers. It skips compressed/encrypted ID3 frames rather than interpreting bytes it cannot safely decode.
 
 No parser failure creates or updates a canonical Recording/Release identity. The caller receives an error and existing scanner/media state remains intact.
+
+## Verification
+
+PR #16 exact head `fc9613d94493e2d5c355f3aba7b6bd2a24a2d334` passed Music CI `35030658032`, including exact-source verification, formatting, vet, race tests, and service build, and Platform Contract `35030658657`.
+
+PR #16 merged as signed authoritative `main` commit `bc90686a18338afef650b73357f454d1be541afb`. Post-merge `main` passed Music CI `35030857299` and Platform Contract `35030858110`.
+
+The schema-v3-to-v4 regression test preserves existing library/file state while adding metadata storage. These results establish the bounded Development source foundation only; they are not production, recovery, release, or Stable acceptance.
 
 ## Explicitly deferred
 
