@@ -32,7 +32,7 @@ This roadmap records current planned and recommended GoreeCloud Music feature wo
 | FR-008 | Present source and availability in Now Playing, mini-player, queue, search, menus, mixed playlists, Credits, and downloads without color-only semantics. | High | Planned |
 | FR-009 | Route playback to an exact downloaded copy, authorized server copy, or approved online source according to policy without silent recording substitution. | High | Planned |
 | FR-010 | Search private libraries and approved online sources with All, Server, YouTube, Downloaded, and Offline scopes where available. | High | Planned; YouTube scope proposed |
-| FR-011 | Implement multi-library self-hosted storage, per-user authorization, scanning/change detection, metadata/artwork, favorites, ratings, recent activity, and persistent queues. | High | Planned |
+| FR-011 | Implement multi-library self-hosted storage, per-user authorization, scanning/change detection, metadata/artwork, favorites, ratings, recent activity, and persistent queues. | High | In progress — storage/migration foundation merged; Milestone 1 runtime pending |
 | FR-012 | Support FLAC, ALAC, WAV, AIFF, AAC, MP3, Opus, and Ogg Vorbis with original/lossless playback where supported, ranges, gapless, normalization, crossfade, buffering, and adaptive transcoding. | High | Planned |
 | FR-013 | Implement Efficient, Balanced, Lossless, and Original Quality profiles with connection-aware policies and playback diagnostics. | High | Planned |
 | FR-014 | Build Advanced Now Playing with artwork, source, availability, quality, transport, queue, lyrics, Credits, device, volume, timer, and contextual actions. | High | Planned |
@@ -96,7 +96,7 @@ This roadmap records current planned and recommended GoreeCloud Music feature wo
 | FR-072 | Design Manager observability around scanner health, storage, stream counts, aggregate transcode load, provider/cache/download health, API latency, and errors without exposing private listening content by default. | High | Planned / privacy requirement |
 | FR-073 | Implement source-scoped degraded modes so provider outages/auth failures/rate limits/policy changes do not block local library browsing, authorized offline playback, or unrelated first-party capabilities. | High | Planned |
 | FR-074 | Define stable native API domains for libraries, recordings, releases, source items, sources, search, playback sessions, queues, playlists, downloads, recommendations, radio, lyrics, devices, history, and sharing. | High | Planned |
-| FR-075 | Adopt the documented Milestone 0–8 implementation sequence and require verified source/test evidence before any milestone, feature, or client target is treated as complete. | High | Planned / delivery control |
+| FR-075 | Adopt the documented Milestone 0–8 implementation sequence and require verified source/test evidence before any milestone, feature, or client target is treated as complete. | High | In progress — Milestone 0 source foundation merged; Milestones 1–8 pending |
 | FR-076 | Maintain an acceptance matrix covering multi-user isolation, source disablement, provider failure, offline operation, queue recovery, exact-match routing, cache/download integrity, sync conflicts, accessibility, security/privacy, backup/recovery, and current-Stable Glaze UI. | High | Planned / verification control |
 
 ## Maintenance and synchronization
