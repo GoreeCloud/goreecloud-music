@@ -1,42 +1,122 @@
-schema_version: 1
-product:
-  name: GoreeCloud Music
+schema_version: "0.2"
+
+component:
+  type: application
+  id: goreecloud-music
+  product_name: GoreeCloud Music
   repository: GoreeCloud/goreecloud-music
-  version: 0.1.0-dev.1
-  lifecycle: active-development
-  milestone: 0-architecture-foundation
-native_qualification:
-  repository_origin: goreecloud-created
-  whole_product_upstream_dependency: false
+
+lifecycle: development
+version: 0.1.0-dev.1
+
+supported_platforms:
+  - linux
+
+api:
+  versions:
+    - v1
+  endpoints:
+    - name: health
+      url: /healthz
+      purpose: Development service health endpoint.
+    - name: system-info
+      url: /api/v1/system/info
+      purpose: Development build and service identity endpoint.
+
 platform_systems:
-  goreecloud_identity:
-    state: planned
-    evidence: authorization contract only; no runtime integration claim
+  manager:
+    result: applicable-blocked
+    version: null
+    evidence: []
+    notes: Manager observability is planned; no accepted runtime integration exists.
   privacy_shield:
-    state: planned
-    evidence: privacy boundaries documented; no runtime integration claim
+    result: applicable-blocked
+    version: null
+    evidence: []
+    notes: Privacy boundaries are documented, but Privacy Shield runtime acceptance has not been established.
   wardveil_security:
-    state: planned
-    evidence: security requirements documented; no runtime integration claim
+    result: applicable-blocked
+    version: null
+    evidence: []
+    notes: Security requirements are documented, but Wardveil Security runtime acceptance has not been established.
   everkeep:
-    state: planned
-    evidence: recovery requirements documented; no runtime integration claim
+    result: applicable-blocked
+    version: null
+    evidence: []
+    notes: Backup and recovery requirements are documented, but Everkeep backup/restore acceptance has not been established.
   glaze_ui:
-    state: planned
-    evidence: current Milestone 0 service foundation is headless; user-facing clients not implemented
-  goreecloud_mesh:
-    state: planned
-    evidence: coordination integration not implemented
-  goreecloud_manager:
-    state: planned
-    evidence: observability contract planned; runtime integration not implemented
-application_integrations:
-  goreecloud_search: planned
-  goreecloud_notify: planned
-  goreecloud_sync: planned
-provider_integrations:
-  youtube:
-    state: proposed-approval-required
-    enabled: false
-    evidence: no provider adapter implementation in Milestone 0
-stable_eligible: false
+    result: applicable-blocked
+    version: null
+    evidence: []
+    notes: Current implemented Milestone 0 source is headless; no GoreeCloud Music client has current-Stable Glaze UI implementation or acceptance evidence.
+  mesh:
+    result: applicable-blocked
+    version: null
+    evidence: []
+    notes: GoreeCloud Mesh coordination and capability publication are not implemented or accepted.
+    capabilities: []
+    dependencies: []
+    published_events: []
+    consumed_events: []
+  identity:
+    result: applicable-blocked
+    version: null
+    evidence: []
+    notes: An application authorization contract exists, but GoreeCloud Identity authentication/session runtime integration is not implemented or accepted.
+
+health:
+  health_endpoint: /healthz
+  readiness_endpoint: null
+
+continuity:
+  backup:
+    required: true
+    requirements:
+      - Protect durable Music application state and schema/migration metadata through an Everkeep-aligned backup scope before release acceptance.
+      - Protect original user media as a separate recoverable data scope rather than treating application-state backup as media backup.
+  restore:
+    required: true
+    requirements:
+      - Validate restoration into a clean environment and verify the restored storage schema is supported before service readiness.
+      - Verify restored application state and referenced media scopes independently before representing the library as recovered.
+  export:
+    required: true
+    requirements:
+      - Provide a documented user-controlled export for durable portable Music state where applicable.
+  portability:
+    required: true
+    requirements:
+      - Preserve canonical Music identities and use documented portable representations so a storage backend can be replaced without redefining product identity.
+
+external_dependencies: []
+
+compatibility:
+  platform_contract: "0.2"
+  glaze_ui_required: "1.4.1"
+  requires:
+    - goreecloud-platform-contract==0.2
+    - glaze-ui==1.4.1
+  provides:
+    - goreecloud-music-development-api-v1
+
+evidence:
+  acceptance_tests: []
+  release: []
+
+conformance:
+  status: nonconformant
+  validated_at: null
+  evidence: []
+  blockers:
+    - GoreeCloud Manager runtime integration and acceptance remain blocked.
+    - Privacy Shield runtime integration and acceptance remain blocked.
+    - Wardveil Security runtime integration and acceptance remain blocked.
+    - Everkeep backup and restore acceptance remain blocked.
+    - Current-Stable Glaze UI client implementation and product-specific acceptance remain blocked.
+    - GoreeCloud Mesh runtime integration and acceptance remain blocked.
+    - GoreeCloud Identity authentication/session runtime integration and acceptance remain blocked.
+    - Production persistence backend and native multi-user library runtime are not implemented.
+    - Required Stable acceptance-test and published release evidence has not been produced.
+
+# GoreeCloud Sync is separately governed application/service functionality and is
+# intentionally not represented as an eighth Integral Platform System.
