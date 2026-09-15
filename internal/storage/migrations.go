@@ -60,7 +60,7 @@ var migrations = []Migration{
 	{
 		ID:   "0003-library-files",
 		From: 2,
-		To:   CurrentVersion,
+		To:   3,
 		Changes: []Change{
 			{Kind: ChangeCreateEntity, Entity: "library_files", Detail: "per-library filesystem observations for source-preserving incremental scan and missing-file reconciliation"},
 		},
@@ -112,7 +112,7 @@ func ValidateCatalog(catalog []Migration) error {
 			return fmt.Errorf("migration %q must move forward", migration.ID)
 		}
 		if len(migration.Changes) == 0 {
-			return fmt.Errorf("migration %q must declare at least one change", migration.ID)
+			return fmt.Errorf("migration %q must declare at least one change")
 		}
 		for j, change := range migration.Changes {
 			if change.Kind != ChangeCreateEntity {
