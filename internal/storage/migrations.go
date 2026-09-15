@@ -65,6 +65,14 @@ var migrations = []Migration{
 			{Kind: ChangeCreateEntity, Entity: "library_files", Detail: "per-library filesystem observations for source-preserving incremental scan and missing-file reconciliation"},
 		},
 	},
+	{
+		ID:   "0004-library-file-metadata",
+		From: 3,
+		To:   CurrentVersion,
+		Changes: []Change{
+			{Kind: ChangeCreateEntity, Entity: "library_file_metadata", Detail: "normalized embedded metadata bound to an exact library-file observation snapshot without creating canonical recording identity"},
+		},
+	},
 }
 
 // Backend is the minimum transactional boundary needed by the migration runner.
