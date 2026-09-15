@@ -111,6 +111,9 @@ func (b *Backend) ExtractLibraryFileMetadata(ctx context.Context, profileID doma
 	if err != nil {
 		return LibraryFileMetadata{}, fmt.Errorf("extract metadata from %q: %w", relativePath, err)
 	}
+	if err := verifyObservedLibraryFileSnapshot(source, sizeBytes, modifiedNS); err != nil {
+		return LibraryFileMetadata{}, err
+	}
 	if extractedAt.IsZero() {
 		extractedAt = time.Now().UTC()
 	} else {
@@ -264,18 +267,23 @@ func openObservedLibraryFile(rootPath, relativePath string, expectedSize, expect
 	if err != nil {
 		return nil, fmt.Errorf("open library file within root: %w", err)
 	}
-	info, err := file.Stat()
-	if err != nil {
+	if err := verifyObservedLibraryFileSnapshot(file, expectedSize, expectedModifiedNS); err != nil {
 		_ = file.Close()
-		return nil, fmt.Errorf("stat opened library file: %w", err)
-	}
-	if !info.Mode().IsRegular() {
-		_ = file.Close()
-		return nil, fmt.Errorf("library file is not regular")
-	}
-	if info.Size() != expectedSize || info.ModTime().UnixNano() != expectedModifiedNS {
-		_ = file.Close()
-		return nil, fmt.Errorf("library file changed since last scanner observation; rescan required")
+		return nil, err
 	}
 	return file, nil
+}
+
+func verifyObservedLibraryFileSnapshot(file *os.File, expectedSize, expectedModifiedNS int64) error {
+	info, err := file.Stat()
+	if err != nil {
+		return fmt.Errorf("stat opened library file: %w", err)
+	}
+	if !info.Mode().IsRegular() {
+		return fmt.Errorf("library file is not regular")
+	}
+	if info.Size() != expectedSize || info.ModTime().UnixNano() != expectedModifiedNS {
+		return fmt.Errorf("library file changed since last scanner observation; rescan required")
+	}
+	return nil
 }
