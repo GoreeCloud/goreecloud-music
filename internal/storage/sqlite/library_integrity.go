@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/GoreeCloud/goreecloud-music/internal/domain"
@@ -139,7 +140,7 @@ func (b *Backend) HashLibraryFileContent(ctx context.Context, profileID domain.P
 	return PlayableAssetContentHash{PlayableAssetID: assetID, SHA256: encoded, SizeBytes: sizeBytes}, nil
 }
 
-func stableSHA256(source io.ReadSeeker, expectedSize, expectedModifiedNS int64) ([]byte, error) {
+func stableSHA256(source *os.File, expectedSize, expectedModifiedNS int64) ([]byte, error) {
 	var first []byte
 	for pass := 0; pass < 2; pass++ {
 		if _, err := source.Seek(0, io.SeekStart); err != nil {
