@@ -52,15 +52,30 @@ Merged PR #9 extends the Development library foundation with:
 
 PR #9 merged to `main` as `ac42ebc6f5fe3143c0cbc77cd6c3fce7397f44ac`. Its exact candidate `a6579a7e029881ef80d8d202833de19deceb2da4` passed CI `35019904248` and Platform Contract `35019905704`; post-merge `main` passed CI `35020139101` and Platform Contract `35020140030`.
 
+### Milestone 1 profile-state foundation
+
+Merged PR #12 adds persistent, profile-owned state for authorized recordings:
+
+- Favorite set/clear operations and bounded favorite listing.
+- 0–100 rating set/read/clear operations.
+- Recently Played event persistence and bounded recent-history listing.
+- Current library-read authorization checks for recording-scoped state mutations and direct rating reads.
+- Membership-filtered Favorites and Recently Played queries so revoked library access suppresses stale state from normal Music surfaces.
+- Per-profile state isolation when multiple profiles can read the same library.
+- Validation for ratings, history timestamps/durations, and result limits.
+- Focused tests covering default denial, cross-profile isolation, explicit access grants, authorization revocation, validation, race testing, and service build.
+
+PR #12 merged to `main` as `168d19d07e9b32e0089a512b9e6b7964db76ece1`. Exact candidate `2721d2b7660763534396be4017ab9c18e47078da` passed CI `35025974258` and Platform Contract `35025974812`; post-merge `main` passed CI `35026228206` and Platform Contract `35026228918`.
+
 ## Partial / foundation only
 
-- Native multi-user library: persistent profile/library membership and source-file observation/reconciliation foundations exist, but metadata/artwork extraction, canonical Recording/Release/Source Item/Playable Asset ingestion from scanned files, filesystem event watchers, complete multi-user library operations, favorites/ratings/recent activity operations, and library/search APIs do not.
+- Native multi-user library: persistent profile/library membership, source-file observation/reconciliation, and profile-scoped Favorites/Ratings/Recently Played foundations exist, but metadata/artwork extraction, canonical Recording/Release/Source Item/Playable Asset ingestion from scanned files, filesystem event watchers, Recently Added queries, complete multi-user isolation across all remaining library paths, and library/search APIs do not.
 - Playback routing: decision core exists; actual stream acquisition, codec negotiation, transcoding, and sessions do not.
 - Provider architecture: contract and registry exist; no real provider adapters exist.
 - Authorization: application and durable library-membership foundations exist; production GoreeCloud Identity/Privacy Shield/Wardveil runtime integration does not.
-- API: service shell and operational endpoints exist; product library/search/playback APIs are not implemented.
+- API: service shell and operational endpoints exist; product library/search/playback/profile-state APIs are not implemented.
 - Queue: domain/schema foundations exist; queue service operations, recovery, and multi-device continuity are not implemented.
-- Persistence: the SQLite Development backend and schema-v3 scan state are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
+- Persistence: the SQLite Development backend, schema-v3 scan state, and profile-state operations are implemented, but production persistence qualification, corruption handling, export/restore, and Everkeep recovery acceptance remain open.
 
 ## Planned
 

@@ -2,7 +2,7 @@
 title: "GoreeCloud Music — Repository Change Log"
 document_type: "Repository Change Log"
 status: "Active"
-version: "v1.0"
+version: "v1.1"
 classification: "Internal"
 last_updated: "2026-09-15"
 application: "GoreeCloud Music"
@@ -11,6 +11,18 @@ application: "GoreeCloud Music"
 # GoreeCloud Music — Repository Change Log
 
 This repository changelog records verified source and repository-documentation changes. The canonical GoreeCloud product changelog is `GoreeCloud/Changelogs/Change Log — Music.md`. Planned roadmap items are not completed changes merely because they appear in documentation.
+
+## September 15, 2026 — Authorization-scoped Favorites, Ratings, and Recently Played foundation
+
+- PR #12 merged as authoritative `main` commit `168d19d07e9b32e0089a512b9e6b7964db76ece1`.
+- Exact candidate `2721d2b7660763534396be4017ab9c18e47078da` passed Music CI `35025974258` and Platform Contract `35025974812`.
+- Post-merge `main` passed Music CI `35026228206` and Platform Contract `35026228918`.
+- Added profile-owned Favorite set/clear and bounded listing operations using the existing `favorites` application-state entity.
+- Added profile-owned 0–100 Rating set/read/clear operations using the existing `ratings` entity.
+- Added profile-owned Recently Played event persistence and bounded recent-history listing using the existing `play_history` entity.
+- Recording-scoped state operations require current library read authorization. Favorite/history retrieval re-evaluates membership so revoked library access is suppressed from normal Music surfaces.
+- Tests cover default denial, explicit access grants, cross-profile isolation, independent rating state, authorization-revocation suppression, validation bounds, race testing, and service build.
+- This change does not add a schema version or dependency and does not implement Recently Added, canonical media ingestion, product APIs, production authentication, recovery acceptance, release eligibility, or Stable status.
 
 ## September 15, 2026 — Markdown-first documentation alignment
 
