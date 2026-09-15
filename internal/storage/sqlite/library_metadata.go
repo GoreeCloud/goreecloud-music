@@ -46,13 +46,13 @@ type LibraryFileMetadata struct {
 	Album            string
 	AlbumArtist      string
 	Genre            string
-	Date              string
-	TrackNumber       string
-	DiscNumber        string
-	SourceSizeBytes   int64
-	SourceModifiedNS  int64
-	ExtractedAt       time.Time
-	Current           bool
+	Date             string
+	TrackNumber      string
+	DiscNumber       string
+	SourceSizeBytes  int64
+	SourceModifiedNS int64
+	ExtractedAt      time.Time
+	Current          bool
 }
 
 // ExtractLibraryFileMetadata reads embedded metadata from one currently
@@ -142,18 +142,18 @@ func (b *Backend) ExtractLibraryFileMetadata(ctx context.Context, profileID doma
 	}
 
 	return LibraryFileMetadata{
-		FileID:          fileID,
-		LibraryID:       validatedLibrary,
-		RelativePath:    relativePath,
-		TagFormat:       tags.TagFormat,
-		Title:           tags.Title,
-		Artist:          tags.Artist,
-		Album:           tags.Album,
-		AlbumArtist:     tags.AlbumArtist,
-		Genre:           tags.Genre,
-		Date:            tags.Date,
-		TrackNumber:     tags.TrackNumber,
-		DiscNumber:      tags.DiscNumber,
+		FileID:           fileID,
+		LibraryID:        validatedLibrary,
+		RelativePath:     relativePath,
+		TagFormat:        tags.TagFormat,
+		Title:            tags.Title,
+		Artist:           tags.Artist,
+		Album:            tags.Album,
+		AlbumArtist:      tags.AlbumArtist,
+		Genre:            tags.Genre,
+		Date:             tags.Date,
+		TrackNumber:      tags.TrackNumber,
+		DiscNumber:       tags.DiscNumber,
 		SourceSizeBytes:  sizeBytes,
 		SourceModifiedNS: modifiedNS,
 		ExtractedAt:      extractedAt,
@@ -231,23 +231,24 @@ func openObservedLibraryFile(rootPath, relativePath string, expectedSize, expect
 	if err != nil {
 		return nil, err
 	}
-	fullPath := filepath.Join(rootPath, filepath.FromSlash(normalized))
-	within, err := filepath.Rel(rootPath, fullPath)
+	root, err := os.OpenRoot(rootPath)
 	if err != nil {
-		return nil, fmt.Errorf("resolve library file path: %w", err)
+		return nil, fmt.Errorf("open library root: %w", err)
 	}
-	if within == ".." || strings.HasPrefix(within, ".."+string(filepath.Separator)) || filepath.IsAbs(within) {
-		return nil, fmt.Errorf("library file path escapes library root")
-	}
+	defer root.Close()
 
-	current := rootPath
-	components := strings.Split(filepath.FromSlash(normalized), string(filepath.Separator))
+	components := strings.Split(normalized, "/")
+	current := ""
 	for i, component := range components {
 		if component == "" || component == "." || component == ".." {
 			return nil, fmt.Errorf("library file path contains invalid component")
 		}
-		current = filepath.Join(current, component)
-		info, err := os.Lstat(current)
+		if current == "" {
+			current = component
+		} else {
+			current = filepath.Join(current, component)
+		}
+		info, err := root.Lstat(current)
 		if err != nil {
 			return nil, fmt.Errorf("inspect library file component %q: %w", component, err)
 		}
@@ -259,9 +260,9 @@ func openObservedLibraryFile(rootPath, relativePath string, expectedSize, expect
 		}
 	}
 
-	file, err := os.Open(fullPath)
+	file, err := root.Open(filepath.FromSlash(normalized))
 	if err != nil {
-		return nil, fmt.Errorf("open library file: %w", err)
+		return nil, fmt.Errorf("open library file within root: %w", err)
 	}
 	info, err := file.Stat()
 	if err != nil {
