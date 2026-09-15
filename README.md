@@ -6,10 +6,12 @@ GoreeCloud Music is GoreeCloud's first-party, self-hosted-first music platform. 
 
 **Version:** `0.1.0-dev.1`  
 **Lifecycle:** Active Development  
-**Current milestone:** Milestone 0 — Architecture Foundation  
+**Current milestone:** Milestone 1 — Native Multi-User Library  
 **Stable:** No
 
-The current repository implements the architecture foundation: core domain identities, availability semantics, provider and authorization contracts, deterministic source routing, queue identity, an engine-neutral application-state schema and forward migration contract, a minimal health/build-info service, tests, exact-source CI, and truthful Platform-System metadata. It does **not** yet implement a usable music library, production persistence backend, playback server, provider integration, offline downloads, recommendations, or user-facing clients.
+The current `main` source includes the accepted Milestone 0 architecture/storage foundation plus the first bounded Milestone 1 persistence and per-user library-authorization foundation merged through PR #7. It now includes a concrete SQLite Development application-state backend, schema version 2 with explicit `library_memberships`, profile/library persistence, schema-v1 owner-authorization preservation during v2 migration, storage-aware health reporting, tests, exact-source CI, and truthful Platform-System metadata.
+
+This is not a complete usable music library. Incremental scanning, filesystem-change detection, metadata/artwork ingestion, recording/release ingestion, favorites/ratings/recent activity service operations, library/search APIs, production authentication/session integration, Everkeep recovery acceptance, playback, provider integration, offline downloads, recommendations, and user-facing clients remain open.
 
 ## Development service
 
@@ -24,7 +26,9 @@ Implemented development endpoints:
 - `GET /healthz`
 - `GET /api/v1/system/info`
 
-See [`api/openapi.yaml`](api/openapi.yaml) for the current contract.
+The service opens and migrates its local Development application-state database at startup. `GOREECLOUD_MUSIC_DB` may override the local database path.
+
+See [`api/openapi.yaml`](api/openapi.yaml) for the current API contract.
 
 ## Architecture controls
 
@@ -32,6 +36,7 @@ See [`api/openapi.yaml`](api/openapi.yaml) for the current contract.
 - [`FEATURES.md`](FEATURES.md)
 - [`FEATURE-ROADMAP.md`](FEATURE-ROADMAP.md)
 - [`docs/architecture/milestone-0.md`](docs/architecture/milestone-0.md)
+- [`docs/architecture/milestone-1.md`](docs/architecture/milestone-1.md)
 - [`docs/architecture/storage-model.md`](docs/architecture/storage-model.md)
 - [`goreecloud.platform.yaml`](goreecloud.platform.yaml)
 
@@ -39,11 +44,13 @@ The authoritative product specification remains the GoreeCloud Drive record `Gor
 
 ## Storage boundary
 
-The Milestone 0 storage contract defines durable Music application-state identities and forward migration behavior without selecting a production database engine. Original user audio files remain independent from application database state, and reusable authentication/provider secrets are not ordinary application records. A real persistence backend, library scanning/indexing, backup/restore acceptance, and multi-user runtime isolation remain later implementation work.
+The Music storage contract keeps durable application state separate from original user media. The current Development backend is SQLite, but the engine-neutral Music domain/storage contract remains authoritative over backend-local identity. Original user audio files remain independent from application database state, and reusable authentication/provider secrets are not ordinary application records.
+
+The current source verifies forward schema migration through version 2, including preservation of existing schema-v1 library-owner authorization. Production persistence qualification, backup/restore acceptance, corruption/recovery procedures, and Everkeep acceptance remain open.
 
 ## Provider boundary
 
-No external music provider is enabled in Milestone 0. YouTube remains proposed and approval-required; no YouTube adapter, authentication, playback, search, or download capability is implemented by this repository state.
+No external music provider is enabled. YouTube remains proposed and approval-required; no YouTube adapter, authentication, playback, search, or download capability is implemented by this repository state.
 
 ## Security and privacy
 
