@@ -1,0 +1,21 @@
+# Build output
+bin/
+build/
+dist/
+coverage/
+*.out
+
+# Runtime/local state
+.env
+.env.*
+!.env.example
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Editors/OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
